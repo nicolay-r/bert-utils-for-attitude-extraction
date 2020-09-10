@@ -63,7 +63,7 @@ if __name__ == "__main__":
     # TODO. This might be (version) modified in order to calculate data for other collections.
     ra_v11 = RuSentRelWithRuAttitudesExperiment.read_ruattitudes_in_memory(
         stemmer=stemmer,
-        version=RuAttitudesVersions.V20)
+        version=RuAttitudesVersions.V11)
 
     for labels_mode, data_io in data_io_modes:
         for training_type, experiment_type in training_modes:

@@ -19,9 +19,6 @@ from arekit.source.rusentiframes.io_utils import RuSentiFramesVersions
 from arekit.source.rusentrel.opinions.formatter import RuSentRelOpinionCollectionFormatter
 from arekit.source.rusentrel.synonyms import RuSentRelSynonymsCollection
 
-from callback import CustomCallback
-from model_io import CustomNeuralNetworkIO
-
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
@@ -50,9 +47,9 @@ class RuSentRelBasedExperimentsIOUtils(DataIO):
             stemmer=self.__stemmer)
 
         self.__evaluator = TwoClassEvaluator(self.__synonym_collection)
-        self.__callback = CustomCallback()
+        self.__callback = None
 
-        self.__model_io = CustomNeuralNetworkIO()
+        self.__model_io = None
 
         self.__sources_dir = None
         self.__results_dir = None
