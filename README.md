@@ -1,12 +1,14 @@
-# ARElm-app 0.20.4
+# BERT tsv-input formatter for Sentiment Attitude Extraction task
     
-Language Models service (for BERT-based models), using AREkit library.
+Language Models service (for BERT-based models), using [AREkit](https://github.com/nicolay-r/AREkit) library.
+As a basis of [Sentiment Attitude Extraction task](https://github.com/nicolay-r/RuSentRel), we considering the conversion for the following datasets:
+* RuSentRel
+* RuAttitudes
+
+## Dependencies
+
+* Python 2.7.9 (Assumes to be upgraded to 3.6+)
+* AREkit == 0.20.4
 
 ## References
-
-Origial repository, from which the code has been fetched 
-(the repo below considered as legacy, and assumes to be non supported):
-```buildoutcfg
-REPO: git@bitbucket.org:nicolay_r/entity-relation-classifier.git 
-BRANCH: experimential_0.20.4
-```
+> TODO. Provide references to papers with a variety of formatters.
