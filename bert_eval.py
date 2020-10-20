@@ -1,10 +1,7 @@
 #!/usr/bin/python
 import argparse
-import sys
 from os.path import exists
 from tqdm import tqdm
-
-sys.path.append('..')
 
 from arekit.common.experiment.data_io import DataIO
 from arekit.common.experiment.neutral.annot.labels_fmt import ThreeScaleLabelsFormatter
@@ -95,4 +92,3 @@ if __name__ == "__main__":
                 perform_evaluation(cv_count=cv_count,
                                    formatter=formatter,
                                    data_io=data_io)
-
