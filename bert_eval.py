@@ -9,10 +9,9 @@ from arekit.common.experiment.scales.three import ThreeLabelScaler
 from arekit.common.experiment.scales.two import TwoLabelScaler
 from arekit.common.experiment.data_type import DataType
 from arekit.common.model.labeling.modes import LabelCalculationMode
-
-from arekit.contrib.bert.eval_tsv import eval_tsv
+from arekit.contrib.bert.supported import BertSampleFormatter
 from arekit.contrib.experiments.rusentrel.experiment import RuSentRelExperiment
-from arekit.contrib.bert.formatters.sample.formats import SampleFormatters
+from arekit.contrib.source.rusentrel.io_utils import RuSentRelVersions
 
 from io_utils import RuSentRelBasedExperimentsIOUtils
 
@@ -33,6 +32,7 @@ def perform_evaluation(cv_count, data_io, formatter):
         return
 
     experiment = RuSentRelExperiment(data_io=data_io,
+                                     version=RuSentRelVersions.V11,
                                      prepare_model_root=False)
 
     eval_tsv(formatter_type=formatter,
@@ -59,11 +59,11 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    formatters = [SampleFormatters.CLASSIF_M,
-                  SampleFormatters.QA_M,
-                  SampleFormatters.NLI_M,
-                  SampleFormatters.QA_B,
-                  SampleFormatters.NLI_B]
+    formatters = [BertSampleFormatter.CLASSIF_M,
+                  BertSampleFormatter.QA_M,
+                  BertSampleFormatter.NLI_M,
+                  BertSampleFormatter.QA_B,
+                  BertSampleFormatter.NLI_B]
 
     labels_formatter = ThreeScaleLabelsFormatter()
 

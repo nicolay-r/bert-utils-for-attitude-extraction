@@ -8,7 +8,7 @@ As a basis of [Sentiment Attitude Extraction task](https://github.com/nicolay-r/
 ## Dependencies
 
 * Python 2.7.9 (Assumes to be upgraded to 3.6+)
-* AREkit == 0.20.4
+* AREkit == 0.20.5
 * tqdm
 
 ## References

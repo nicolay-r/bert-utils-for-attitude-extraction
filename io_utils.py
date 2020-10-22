@@ -11,13 +11,16 @@ from arekit.common.frame_variants.collection import FrameVariantsCollection
 from arekit.common.experiment.cv.doc_stat.rusentrel import RuSentRelDocStatGenerator
 from arekit.common.experiment.data_io import DataIO
 
+from arekit.contrib.source.rusentiframes.collection import RuSentiFramesCollection
+from arekit.contrib.source.rusentiframes.io_utils import RuSentiFramesVersions
+from arekit.contrib.source.rusentrel.io_utils import RuSentRelVersions
+from arekit.contrib.source.rusentrel.opinions.formatter import RuSentRelOpinionCollectionFormatter
+from arekit.contrib.source.rusentrel.synonyms import RuSentRelSynonymsCollection
+
 from arekit.processing.lemmatization.mystem import MystemWrapper
 
-from arekit.source.embeddings.rusvectores import RusvectoresEmbedding
-from arekit.source.rusentiframes.collection import RuSentiFramesCollection
-from arekit.source.rusentiframes.io_utils import RuSentiFramesVersions
-from arekit.source.rusentrel.opinions.formatter import RuSentRelOpinionCollectionFormatter
-from arekit.source.rusentrel.synonyms import RuSentRelSynonymsCollection
+from rusvectores import RusvectoresEmbedding
+
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -37,7 +40,7 @@ class RuSentRelBasedExperimentsIOUtils(DataIO):
         self.__synonym_collection = RuSentRelSynonymsCollection.load_collection(
             stemmer=self.__stemmer,
             is_read_only=True)
-        self.__opinion_formatter = RuSentRelOpinionCollectionFormatter
+        self.__opinion_formatter = RuSentRelOpinionCollectionFormatter(self.__synonym_collection)
         self.__word_embedding = self.__create_word_embedding() if init_word_embedding else None
         self.__cv_folding_algorithm = self.__init_sentence_based_cv_folding_algorithm()
 
@@ -108,7 +111,8 @@ class RuSentRelBasedExperimentsIOUtils(DataIO):
 
     def __init_sentence_based_cv_folding_algorithm(self):
         return SentenceBasedCVFolding(
-            docs_stat=RuSentRelDocStatGenerator(synonyms=self.__synonym_collection),
+            docs_stat=RuSentRelDocStatGenerator(synonyms=self.__synonym_collection,
+                                                version=RuSentRelVersions.V11),
             docs_stat_filepath=path.join(self.get_data_root(), u"docs_stat.txt"))
 
     def __init_simple_cv_folding_algoritm(self):

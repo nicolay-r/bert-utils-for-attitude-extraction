@@ -2,11 +2,22 @@
 import argparse
 import logging
 
+from arekit.common.dataset.text_opinions.helper import TextOpinionHelper
+from arekit.common.experiment.data_type import DataType
+from arekit.common.experiment.input.encoder import BaseInputEncoder
+from arekit.common.experiment.input.formatters.opinion import BaseOpinionsFormatter
+from arekit.common.experiment.input.providers.opinions import OpinionProvider
 from arekit.common.experiment.scales.three import ThreeLabelScaler
 from arekit.common.experiment.scales.two import TwoLabelScaler
+from arekit.contrib.bert.entity.str_rus_nocased_fmt import RussianEntitiesFormatter
+from arekit.contrib.bert.factory import create_bert_sample_formatter
+from arekit.contrib.bert.supported import SampleFormattersService
+from arekit.contrib.experiments.ruattitudes.utils import read_ruattitudes_in_memory
 from arekit.contrib.experiments.rusentrel.experiment import RuSentRelExperiment
 from arekit.contrib.experiments.rusentrel_ds.experiment import RuSentRelWithRuAttitudesExperiment
-from arekit.contrib.bert.encoder import BertEncoder
+from arekit.contrib.networks.core.io_utils import NetworkIOUtils
+from arekit.contrib.source.rusentrel.io_utils import RuSentRelVersions
+
 from args.bert_formatter import BertFormatterArg
 from args.cv_index import CvCountArg
 from args.experiment import ExperimentTypeArg, SUPERVISED_LEARNING, SUPERVISED_LEARNING_WITH_DS
@@ -14,24 +25,6 @@ from args.labels_count import LabelsCountArg
 from args.ra_ver import RuAttitudesVersionArg
 
 from io_utils import RuSentRelBasedExperimentsIOUtils
-
-
-def __encode(experiment, formatter):
-    BertEncoder.to_tsv(experiment=experiment,
-                       sample_formatter=formatter)
-
-
-def __cv_based_experiment(experiment, formatter, cv_count=3):
-    experiment.DataIO.CVFoldingAlgorithm.set_cv_count(cv_count)
-    for cv_index in range(cv_count):
-        experiment.DataIO.CVFoldingAlgorithm.set_iteration_index(cv_index)
-        __encode(experiment=experiment, formatter=formatter)
-
-
-def __non_cv_experiment(experiment, formatter):
-    __cv_based_experiment(experiment=experiment,
-                          formatter=formatter,
-                          cv_count=1)
 
 
 def create_labels_scaler(labels_count):
@@ -64,7 +57,10 @@ if __name__ == "__main__":
     labels_count = LabelsCountArg.read_argument(args)
     cv_count = CvCountArg.read_argument(args)
     ra_version = RuAttitudesVersionArg.read_argument(args)
-    bert_input_formatter = BertFormatterArg.read_argument(args)
+    rusentrel_version = RuSentRelVersions.V11
+    sample_formatter_type = BertFormatterArg.read_argument(args)
+    terms_per_context = 50
+    entity_fmt = RussianEntitiesFormatter()
 
     # Initialize logging.
     stream_handler = logging.StreamHandler()
@@ -74,42 +70,66 @@ if __name__ == "__main__":
     logger.setLevel(logging.INFO)
     logger.addHandler(stream_handler)
 
-    labels_scaler = create_labels_scaler(labels_count)
-    data_io = RuSentRelBasedExperimentsIOUtils(labels_scaler=labels_scaler,
+    label_scaler = create_labels_scaler(labels_count)
+    data_io = RuSentRelBasedExperimentsIOUtils(labels_scaler=label_scaler,
                                                init_word_embedding=False)
 
-    if cv_count == 1:
-        # Non cv mode.
-        cv_mode = u''
-        handler = __non_cv_experiment
-    else:
-        # Using cross validation.
-        cv_mode = u'cv-'
-        handler = __cv_based_experiment
+    cv_mode = u'' if cv_count == 1 else u'cv-'
 
     model_name = u"{cv_m}{training_type}-bert-{formatter}-{labels_mode}l".format(
         cv_m=cv_mode,
         training_type=exp_type,
-        formatter=bert_input_formatter,
+        formatter= SampleFormattersService.type_to_value(sample_formatter_type),
         labels_mode=int(labels_count))
 
     logger.info("Model name: {}".format(model_name))
-
     data_io.set_model_name(model_name)
 
     # Initialize experiment.
     experiment = None
     if exp_type == SUPERVISED_LEARNING_WITH_DS:
-        ra = RuSentRelWithRuAttitudesExperiment.read_ruattitudes_in_memory(
-            stemmer=data_io.Stemmer,
-            version=ra_version)
+        ra = read_ruattitudes_in_memory(version=ra_version)
         experiment = RuSentRelWithRuAttitudesExperiment(
             data_io=data_io,
             prepare_model_root=True,
+            ruattitudes_version=ra_version,
+            rusentrel_version=rusentrel_version,
             ra_instance=ra)
+
     elif exp_type == SUPERVISED_LEARNING:
-        experiment = RuSentRelExperiment(data_io, True)
+        experiment = RuSentRelExperiment(data_io=data_io,
+                                         version=rusentrel_version,
+                                         prepare_model_root=False)
 
     # Running *.tsv serialization.
-    handler(experiment=experiment,
-            formatter=bert_input_formatter)
+    experiment.DataIO.CVFoldingAlgorithm.set_cv_count(cv_count)
+
+    # Create data type.
+    data_type = DataType.Train
+
+    # Create samples formatter.
+    sample_formatter = create_bert_sample_formatter(data_type=data_type,
+                                                    formatter_type=sample_formatter_type,
+                                                    label_scaler=label_scaler,
+                                                    entity_formatter=entity_fmt)
+
+    # Load parsed news collections in memory.
+    # Taken from Neural networks formatter.
+    parsed_news_collection = experiment.create_parsed_collection(data_type)
+
+    # Compose text opinion helper.
+    # Taken from Neural networks formatter.
+    text_opinion_helper = TextOpinionHelper(lambda news_id: parsed_news_collection.get_by_news_id(news_id))
+
+    BaseInputEncoder.to_tsv(
+        sample_filepath=NetworkIOUtils.get_input_sample_filepath(experiment=experiment, data_type=data_type),
+        opinion_filepath=NetworkIOUtils.get_input_opinions_filepath(experiment=experiment, data_type=data_type),
+        opinion_formatter=BaseOpinionsFormatter(data_type),
+        opinion_provider=OpinionProvider.from_experiment(
+            experiment=experiment,
+            data_type=data_type,
+            iter_news_ids=parsed_news_collection.iter_news_ids(),
+            terms_per_context=terms_per_context,
+            text_opinion_helper=text_opinion_helper),
+        sample_formatter=sample_formatter,
+        write_sample_header=True)
