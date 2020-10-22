@@ -15,7 +15,6 @@ from arekit.contrib.bert.supported import SampleFormattersService
 from arekit.contrib.experiments.ruattitudes.utils import read_ruattitudes_in_memory
 from arekit.contrib.experiments.rusentrel.experiment import RuSentRelExperiment
 from arekit.contrib.experiments.rusentrel_ds.experiment import RuSentRelWithRuAttitudesExperiment
-from arekit.contrib.networks.core.io_utils import NetworkIOUtils
 from arekit.contrib.source.rusentrel.io_utils import RuSentRelVersions
 
 from args.bert_formatter import BertFormatterArg
@@ -23,8 +22,9 @@ from args.cv_index import CvCountArg
 from args.experiment import ExperimentTypeArg, SUPERVISED_LEARNING, SUPERVISED_LEARNING_WITH_DS
 from args.labels_count import LabelsCountArg
 from args.ra_ver import RuAttitudesVersionArg
+from data_io import BertRuSentRelBasedExperimentsDataIO
 
-from io_utils import RuSentRelBasedExperimentsIOUtils
+from io_utils import BertIOUtils
 
 
 def create_labels_scaler(labels_count):
@@ -71,15 +71,12 @@ if __name__ == "__main__":
     logger.addHandler(stream_handler)
 
     label_scaler = create_labels_scaler(labels_count)
-    data_io = RuSentRelBasedExperimentsIOUtils(labels_scaler=label_scaler,
-                                               init_word_embedding=False)
+    data_io = BertRuSentRelBasedExperimentsDataIO(labels_scaler=label_scaler)
 
     cv_mode = u'' if cv_count == 1 else u'cv-'
 
-    model_name = u"{cv_m}{training_type}-bert-{formatter}-{labels_mode}l".format(
-        cv_m=cv_mode,
-        training_type=exp_type,
-        formatter= SampleFormattersService.type_to_value(sample_formatter_type),
+    model_name = u"bert-{formatter}-{labels_mode}l".format(
+        formatter=SampleFormattersService.type_to_value(sample_formatter_type),
         labels_mode=int(labels_count))
 
     logger.info("Model name: {}".format(model_name))
@@ -122,8 +119,8 @@ if __name__ == "__main__":
     text_opinion_helper = TextOpinionHelper(lambda news_id: parsed_news_collection.get_by_news_id(news_id))
 
     BaseInputEncoder.to_tsv(
-        sample_filepath=NetworkIOUtils.get_input_sample_filepath(experiment=experiment, data_type=data_type),
-        opinion_filepath=NetworkIOUtils.get_input_opinions_filepath(experiment=experiment, data_type=data_type),
+        sample_filepath=BertIOUtils.get_input_sample_filepath(experiment=experiment, data_type=data_type),
+        opinion_filepath=BertIOUtils.get_input_opinions_filepath(experiment=experiment, data_type=data_type),
         opinion_formatter=BaseOpinionsFormatter(data_type),
         opinion_provider=OpinionProvider.from_experiment(
             experiment=experiment,

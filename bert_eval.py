@@ -12,8 +12,7 @@ from arekit.common.model.labeling.modes import LabelCalculationMode
 from arekit.contrib.bert.supported import BertSampleFormatter
 from arekit.contrib.experiments.rusentrel.experiment import RuSentRelExperiment
 from arekit.contrib.source.rusentrel.io_utils import RuSentRelVersions
-
-from io_utils import RuSentRelBasedExperimentsIOUtils
+from data_io import BertRuSentRelBasedExperimentsDataIO
 
 
 def perform_evaluation(cv_count, data_io, formatter):
@@ -73,8 +72,8 @@ if __name__ == "__main__":
         # For label_scale.
         for label_scaler in [TwoLabelScaler(), ThreeLabelScaler()]:
 
-            data_io = RuSentRelBasedExperimentsIOUtils(labels_scaler=label_scaler,
-                                                       init_word_embedding=False)
+            data_io = BertRuSentRelBasedExperimentsDataIO(labels_scaler=label_scaler,
+                                                          init_word_embedding=False)
 
             data_io.set_experiment_sources_dir(args.sources_dir[0].decode('utf-8'))
             data_io.set_experiment_results_dir(args.results_dir[0].decode('utf-8'))
