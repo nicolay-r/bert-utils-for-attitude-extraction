@@ -3,7 +3,6 @@ from os import path
 from os.path import dirname, join
 
 from arekit.common.evaluation.evaluators.two_class import TwoClassEvaluator
-from arekit.common.experiment.cv.default import SimpleCVFolding
 from arekit.common.experiment.cv.sentence_based import SentenceBasedCVFolding
 from arekit.common.experiment.scales.base import BaseLabelScaler
 from arekit.common.experiment.scales.three import ThreeLabelScaler
@@ -29,25 +28,32 @@ class BertRuSentRelBasedExperimentsDataIO(DataIO):
     def __init__(self, labels_scaler=None):
         assert(isinstance(labels_scaler, BaseLabelScaler) or labels_scaler is None)
 
+        # TODO. Provide rusentrel version.
+
         logger.info("Create experiment [{}]".format(str(labels_scaler)))
 
         super(BertRuSentRelBasedExperimentsDataIO, self).__init__(
             labels_scale=ThreeLabelScaler() if labels_scaler is None else labels_scaler)
 
         self.__stemmer = MystemWrapper()
+        # TODO. Provide this from the outside
         self.__synonym_collection = RuSentRelSynonymsCollection.load_collection(
             stemmer=self.__stemmer,
             is_read_only=True)
         self.__opinion_formatter = RuSentRelOpinionCollectionFormatter(self.__synonym_collection)
-        self.__cv_folding_algorithm = self.__init_sentence_based_cv_folding_algorithm()
+        self.__cv_folding_algorithm = SentenceBasedCVFolding(
+            docs_stat=RuSentRelDocStatGenerator(synonyms=self.__synonym_collection,
+                                                # TODO. Provide rusentrel version
+                                                version=RuSentRelVersions.V11),
+            docs_stat_filepath=path.join(self.get_data_root(), u"docs_stat.txt"))
 
+        # TODO. Provide this from the outside
         self.__frames_collection = RuSentiFramesCollection.read_collection(version=RuSentiFramesVersions.V10)
         self.__unique_frame_variants = FrameVariantsCollection.create_unique_variants_from_iterable(
             variants_with_id=self.__frames_collection.iter_frame_id_and_variants(),
             stemmer=self.__stemmer)
 
         self.__evaluator = TwoClassEvaluator(self.__synonym_collection)
-        self.__callback = None
 
         self.__model_io = None
 
@@ -87,23 +93,6 @@ class BertRuSentRelBasedExperimentsDataIO(DataIO):
     @property
     def CVFoldingAlgorithm(self):
         return self.__cv_folding_algorithm
-
-    @property
-    def Callback(self):
-        return self.__callback
-
-    # endregion
-
-    # region private methods
-
-    def __init_sentence_based_cv_folding_algorithm(self):
-        return SentenceBasedCVFolding(
-            docs_stat=RuSentRelDocStatGenerator(synonyms=self.__synonym_collection,
-                                                version=RuSentRelVersions.V11),
-            docs_stat_filepath=path.join(self.get_data_root(), u"docs_stat.txt"))
-
-    def __init_simple_cv_folding_algoritm(self):
-        return SimpleCVFolding()
 
     # endregion
 
