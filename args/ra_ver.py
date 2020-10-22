@@ -1,5 +1,5 @@
+from arekit.contrib.source.ruattitudes.io_utils import RuAttitudesVersions
 from args.base import BaseArg
-from arekit.source.ruattitudes.io_utils import RuAttitudesVersions
 
 
 # RuAttitudes supported versions
