@@ -9,6 +9,7 @@ from arekit.common.experiment.input.formatters.opinion import BaseOpinionsFormat
 from arekit.common.experiment.input.providers.opinions import OpinionProvider
 from arekit.common.experiment.scales.three import ThreeLabelScaler
 from arekit.common.experiment.scales.two import TwoLabelScaler
+from arekit.contrib.bert.core.input.io_utils import BertIOUtils
 from arekit.contrib.bert.entity.str_rus_nocased_fmt import RussianEntitiesFormatter
 from arekit.contrib.bert.factory import create_bert_sample_formatter
 from arekit.contrib.bert.supported import SampleFormattersService
@@ -23,8 +24,6 @@ from args.experiment import ExperimentTypeArg, SUPERVISED_LEARNING, SUPERVISED_L
 from args.labels_count import LabelsCountArg
 from args.ra_ver import RuAttitudesVersionArg
 from data_io import BertRuSentRelBasedExperimentsDataIO
-
-from io_utils import BertIOUtils
 
 
 def create_labels_scaler(labels_count):
