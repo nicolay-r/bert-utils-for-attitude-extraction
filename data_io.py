@@ -94,6 +94,10 @@ class BertRuSentRelBasedExperimentsDataIO(DataIO):
     def CVFoldingAlgorithm(self):
         return self.__cv_folding_algorithm
 
+    @property
+    def Callback(self):
+        return None
+
     # endregion
 
     # region public methods
