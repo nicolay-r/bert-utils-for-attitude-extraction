@@ -2,17 +2,12 @@
 import argparse
 import logging
 
-from arekit.common.dataset.text_opinions.helper import TextOpinionHelper
-from arekit.common.experiment.data_type import DataType
-from arekit.common.experiment.input.encoder import BaseInputEncoder
-from arekit.common.experiment.input.formatters.opinion import BaseOpinionsFormatter
-from arekit.common.experiment.input.providers.opinions import OpinionProvider
 from arekit.common.experiment.scales.three import ThreeLabelScaler
 from arekit.common.experiment.scales.two import TwoLabelScaler
 
 from arekit.contrib.bert.core.input.io_utils import BertIOUtils
 from arekit.contrib.bert.entity.str_rus_nocased_fmt import RussianEntitiesFormatter
-from arekit.contrib.bert.factory import create_bert_sample_formatter
+from arekit.contrib.bert.run_serializer import BertExperimentInputSerializer
 from arekit.contrib.bert.supported import SampleFormattersService
 from arekit.contrib.experiments.rusentrel.experiment import RuSentRelExperiment
 from arekit.contrib.experiments.rusentrel_ds.experiment import RuSentRelWithRuAttitudesExperiment
@@ -27,6 +22,7 @@ from args.ra_ver import RuAttitudesVersionArg
 from data_io import BertRuSentRelBasedExperimentsDataIO
 
 
+# TODO. Move this into args.
 def create_labels_scaler(labels_count):
     assert (isinstance(labels_count, int))
 
@@ -107,34 +103,12 @@ if __name__ == "__main__":
     # Running *.tsv serialization.
     experiment.DataIO.CVFoldingAlgorithm.set_cv_count(cv_count)
 
-    # Create data type.
-    data_type = DataType.Train
+    serializer = BertExperimentInputSerializer(experiment=experiment,
+                                               skip_if_folder_exists=True,
+                                               sample_formatter_type=sample_formatter_type,
+                                               entity_formatter=entity_fmt,
+                                               label_scaler=label_scaler,
+                                               write_sample_header=True,
+                                               io_utils=BertIOUtils)
 
-    # Create samples formatter.
-    sample_formatter = create_bert_sample_formatter(data_type=data_type,
-                                                    formatter_type=sample_formatter_type,
-                                                    label_scaler=label_scaler,
-                                                    entity_formatter=entity_fmt)
-
-    # Load parsed news collections in memory.
-    # Taken from Neural networks formatter.
-    parsed_news_collection = experiment.create_parsed_collection(data_type)
-
-    # Compose text opinion helper.
-    # Taken from Neural networks formatter.
-    text_opinion_helper = TextOpinionHelper(lambda news_id: parsed_news_collection.get_by_news_id(news_id))
-
-    # TODO. Call this for multiple data_types
-    BaseInputEncoder.to_tsv(
-        sample_filepath=BertIOUtils.get_input_sample_filepath(experiment=experiment, data_type=data_type),
-        opinion_filepath=BertIOUtils.get_input_opinions_filepath(experiment=experiment, data_type=data_type),
-        opinion_formatter=BaseOpinionsFormatter(data_type),
-        opinion_provider=OpinionProvider.from_experiment(
-            experiment=experiment,
-            data_type=data_type,
-            iter_news_ids=parsed_news_collection.iter_news_ids(),
-            terms_per_context=terms_per_context,
-            text_opinion_helper=text_opinion_helper),
-        sample_formatter=sample_formatter,
-        # TODO. Move this into arguments.
-        write_sample_header=True)
+    serializer.run()
