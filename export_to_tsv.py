@@ -87,7 +87,8 @@ if __name__ == "__main__":
     logger.addHandler(stream_handler)
 
     label_scaler = create_labels_scaler(labels_count)
-    data_io = BertRuSentRelBasedExperimentsDataIO(labels_scaler=label_scaler)
+    data_io = BertRuSentRelBasedExperimentsDataIO(labels_scaler=label_scaler,
+                                                  terms_per_context=terms_per_context)
 
     # Setup model name.
     model_name = u"bert-{formatter}-{labels_mode}l".format(

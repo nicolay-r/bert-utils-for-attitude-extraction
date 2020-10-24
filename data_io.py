@@ -25,7 +25,7 @@ logger.setLevel(logging.INFO)
 
 class BertRuSentRelBasedExperimentsDataIO(DataIO):
 
-    def __init__(self, labels_scaler=None):
+    def __init__(self, terms_per_context, labels_scaler=None):
         assert(isinstance(labels_scaler, BaseLabelScaler) or labels_scaler is None)
 
         # TODO. Provide rusentrel version.
@@ -52,6 +52,8 @@ class BertRuSentRelBasedExperimentsDataIO(DataIO):
         self.__unique_frame_variants = FrameVariantsCollection.create_unique_variants_from_iterable(
             variants_with_id=self.__frames_collection.iter_frame_id_and_variants(),
             stemmer=self.__stemmer)
+
+        self.__terms_per_context = terms_per_context
 
         self.__evaluator = TwoClassEvaluator(self.__synonym_collection)
 
@@ -97,6 +99,10 @@ class BertRuSentRelBasedExperimentsDataIO(DataIO):
     @property
     def Callback(self):
         return None
+
+    @property
+    def TermsPerContext(self):
+        return self.__terms_per_context
 
     # endregion
 
