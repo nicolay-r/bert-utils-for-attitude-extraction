@@ -2,13 +2,12 @@ import logging
 from os import path
 from os.path import dirname, join
 
-from arekit.common.evaluation.evaluators.two_class import TwoClassEvaluator
 from arekit.common.experiment.cv.sentence_based import SentenceBasedCVFolding
+from arekit.common.experiment.data.serializing import SerializationData
 from arekit.common.experiment.scales.base import BaseLabelScaler
 from arekit.common.experiment.scales.three import ThreeLabelScaler
 from arekit.common.frame_variants.collection import FrameVariantsCollection
 from arekit.common.experiment.cv.doc_stat.rusentrel import RuSentRelDocStatGenerator
-from arekit.common.experiment.data_io import DataIO
 
 from arekit.contrib.source.rusentiframes.collection import RuSentiFramesCollection
 from arekit.contrib.source.rusentiframes.io_utils import RuSentiFramesVersions
@@ -23,7 +22,7 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 
-class BertRuSentRelBasedExperimentsDataIO(DataIO):
+class BertRuSentRelBasedSerializaingData(SerializationData):
 
     def __init__(self, terms_per_context, labels_scaler=None):
         assert(isinstance(labels_scaler, BaseLabelScaler) or labels_scaler is None)
@@ -32,7 +31,7 @@ class BertRuSentRelBasedExperimentsDataIO(DataIO):
 
         logger.info("Create experiment [{}]".format(str(labels_scaler)))
 
-        super(BertRuSentRelBasedExperimentsDataIO, self).__init__(
+        super(BertRuSentRelBasedSerializaingData, self).__init__(
             labels_scale=ThreeLabelScaler() if labels_scaler is None else labels_scaler)
 
         self.__stemmer = MystemWrapper()
@@ -55,10 +54,6 @@ class BertRuSentRelBasedExperimentsDataIO(DataIO):
 
         self.__terms_per_context = terms_per_context
 
-        self.__evaluator = TwoClassEvaluator(self.__synonym_collection)
-
-        self.__model_io = None
-
         self.__sources_dir = None
         self.__results_dir = None
 
@@ -67,10 +62,6 @@ class BertRuSentRelBasedExperimentsDataIO(DataIO):
     @property
     def Stemmer(self):
         return self.__stemmer
-
-    @property
-    def ModelIO(self):
-        return self.__model_io
 
     @property
     def SynonymsCollection(self):
@@ -89,16 +80,8 @@ class BertRuSentRelBasedExperimentsDataIO(DataIO):
         return self.__opinion_formatter
 
     @property
-    def Evaluator(self):
-        return self.__evaluator
-
-    @property
     def CVFoldingAlgorithm(self):
         return self.__cv_folding_algorithm
-
-    @property
-    def Callback(self):
-        return None
 
     @property
     def TermsPerContext(self):

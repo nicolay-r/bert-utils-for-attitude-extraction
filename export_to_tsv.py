@@ -19,10 +19,11 @@ from args.experiment import ExperimentTypeArg, SUPERVISED_LEARNING, SUPERVISED_L
 from args.labels_count import LabelsCountArg
 from args.ra_ver import RuAttitudesVersionArg
 
-from data_io import BertRuSentRelBasedExperimentsDataIO
-
 
 # TODO. Move this into args.
+from serializing_data import BertRuSentRelBasedSerializaingData
+
+
 def create_labels_scaler(labels_count):
     assert (isinstance(labels_count, int))
 
@@ -35,18 +36,13 @@ def create_labels_scaler(labels_count):
 
 
 def create_experiment(exp_type, data_io):
-    prepare_model_root = False
-
     if exp_type == SUPERVISED_LEARNING_WITH_DS:
         return RuSentRelWithRuAttitudesExperiment(data_io=data_io,
-                                                  prepare_model_root=prepare_model_root,
                                                   ruattitudes_version=ruattitudes_version,
                                                   rusentrel_version=rusentrel_version)
 
     elif exp_type == SUPERVISED_LEARNING:
-        return RuSentRelExperiment(data_io=data_io,
-                                   version=rusentrel_version,
-                                   prepare_model_root=prepare_model_root)
+        return RuSentRelExperiment(data_io=data_io, version=rusentrel_version)
 
     raise NotImplementedError("Experiment type {} is not supported!".format(exp_type))
 
@@ -87,19 +83,19 @@ if __name__ == "__main__":
     logger.addHandler(stream_handler)
 
     label_scaler = create_labels_scaler(labels_count)
-    data_io = BertRuSentRelBasedExperimentsDataIO(labels_scaler=label_scaler,
-                                                  terms_per_context=terms_per_context)
+    serializing_data = BertRuSentRelBasedSerializaingData(labels_scaler=label_scaler,
+                                                          terms_per_context=terms_per_context)
 
     # Setup model name.
     model_name = u"bert-{formatter}-{labels_mode}l".format(
         formatter=SampleFormattersService.type_to_value(sample_formatter_type),
         labels_mode=int(labels_count))
     logger.info("Model name: {}".format(model_name))
-    data_io.set_model_name(model_name)
+    serializing_data.set_model_name(model_name)
 
     # Initialize experiment.
     experiment = create_experiment(exp_type=exp_type,
-                                   data_io=data_io)
+                                   data_io=serializing_data)
 
     # Running *.tsv serialization.
     experiment.DataIO.CVFoldingAlgorithm.set_cv_count(cv_count)
