@@ -87,6 +87,10 @@ class BertRuSentRelBasedSerializaingData(SerializationData):
     def TermsPerContext(self):
         return self.__terms_per_context
 
+    @property
+    def DistanceInTermsBetweenOpinionEndsBound(self):
+        return 10
+
     # endregion
 
     # region public methods
