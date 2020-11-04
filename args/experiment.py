@@ -3,6 +3,7 @@ from args.base import BaseArg
 # Experiment types.
 SUPERVISED_LEARNING = u'sl'
 SUPERVISED_LEARNING_WITH_DS = u'sl+ds'
+DISTANT_SUPERVISION = u'ds'
 
 
 class ExperimentTypeArg(BaseArg):
@@ -20,6 +21,7 @@ class ExperimentTypeArg(BaseArg):
                             dest='exp_type',
                             type=unicode,
                             choices=[SUPERVISED_LEARNING,
-                                     SUPERVISED_LEARNING_WITH_DS],
+                                     SUPERVISED_LEARNING_WITH_DS,
+                                     DISTANT_SUPERVISION],
                             nargs=1,
                             help='Experiment type')
