@@ -1,40 +1,30 @@
-import logging
-
 from arekit.common.experiment.data.serializing import SerializationData
 from arekit.common.frame_variants.collection import FrameVariantsCollection
 
 from arekit.contrib.source.rusentiframes.collection import RuSentiFramesCollection
-from arekit.contrib.source.rusentiframes.io_utils import RuSentiFramesVersions
 from arekit.contrib.source.rusentrel.opinions.formatter import RuSentRelOpinionCollectionFormatter
-from arekit.contrib.source.rusentrel.synonyms import RuSentRelSynonymsCollection
-
-from arekit.processing.lemmatization.mystem import MystemWrapper
-
-
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
+from bert_model_io import BertModelIO
 
 
 class CustomSerializationData(SerializationData):
 
-    def __init__(self, labels_scaler):
-        self.__stemmer = MystemWrapper()
-        super(CustomSerializationData, self).__init__(labels_scaler=labels_scaler,
-                                                      stemmer=self.__stemmer)
+    def __init__(self, labels_scaler, stemmer, frames_version, model_io):
+        assert(isinstance(model_io, BertModelIO))
 
-        # TODO. Provide this from the outside
-        self.__synonym_collection = RuSentRelSynonymsCollection.load_collection(
-            stemmer=self.__stemmer,
-            is_read_only=True)
-        self.__opinion_formatter = RuSentRelOpinionCollectionFormatter(self.__synonym_collection)
+        super(CustomSerializationData, self).__init__(labels_scaler, stemmer)
 
-        # TODO. Provide this from the outside
-        self.__frames_collection = RuSentiFramesCollection.read_collection(version=RuSentiFramesVersions.V10)
+        self.__model_io = model_io
+        self.__opinion_formatter = RuSentRelOpinionCollectionFormatter()
+        self.__frames_collection = RuSentiFramesCollection.read_collection(version=frames_version)
         self.__unique_frame_variants = FrameVariantsCollection.create_unique_variants_from_iterable(
             variants_with_id=self.__frames_collection.iter_frame_id_and_variants(),
             stemmer=self.__stemmer)
 
     # region public properties
+
+    @property
+    def ModelIO(self):
+        return self.__model_io
 
     @property
     def FramesCollection(self):
@@ -47,5 +37,9 @@ class CustomSerializationData(SerializationData):
     @property
     def OpinionFormatter(self):
         return self.__opinion_formatter
+
+    @property
+    def Stemmer(self):
+        return self.__stemmer
 
     # endregion
