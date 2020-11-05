@@ -91,7 +91,7 @@ if __name__ == "__main__":
                                    experiment_data=experiment_data,
                                    folding_type=FoldingType.Fixed if cv_count == 1 else FoldingType.CrossValidation,
                                    rusentrel_version=rusentrel_version,
-                                   is_training=False,
+                                   is_training=True,
                                    experiment_io_type=CustomBertIOUtils,
                                    ruattitudes_version=ra_version)
 
