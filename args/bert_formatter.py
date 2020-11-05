@@ -2,7 +2,7 @@ from arekit.contrib.bert.supported import SampleFormattersService
 from args.base import BaseArg
 
 
-class BertFormatterArg(BaseArg):
+class BertInputFormatterArg(BaseArg):
 
     @staticmethod
     def add_argument(parser):
