@@ -8,12 +8,14 @@ from bert_model_io import BertModelIO
 
 class CustomSerializationData(SerializationData):
 
-    def __init__(self, labels_scaler, stemmer, frames_version, model_io):
+    def __init__(self, labels_scaler, stemmer, frames_version, model_io, terms_per_context):
         assert(isinstance(model_io, BertModelIO))
+        assert(isinstance(terms_per_context, int))
 
         super(CustomSerializationData, self).__init__(labels_scaler, stemmer)
 
         self.__model_io = model_io
+        self.__terms_per_context = terms_per_context
         self.__opinion_formatter = RuSentRelOpinionCollectionFormatter()
         self.__frames_collection = RuSentiFramesCollection.read_collection(version=frames_version)
         self.__unique_frame_variants = FrameVariantsCollection.create_unique_variants_from_iterable(
@@ -41,5 +43,9 @@ class CustomSerializationData(SerializationData):
     @property
     def DistanceInTermsBetweenOpinionEndsBound(self):
         return 10
+
+    @property
+    def TermsPerContext(self):
+        return
 
     # endregion

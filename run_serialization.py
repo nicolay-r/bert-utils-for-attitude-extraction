@@ -83,7 +83,8 @@ if __name__ == "__main__":
         labels_scaler=create_labels_scaler(labels_count),
         stemmer=stemmer,
         frames_version=frames_version,
-        model_io=model_io)
+        model_io=model_io,
+        terms_per_context=terms_per_context)
 
     # Initialize experiment.
     experiment = create_experiment(exp_type=exp_type,
