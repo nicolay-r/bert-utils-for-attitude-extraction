@@ -46,6 +46,6 @@ class CustomSerializationData(SerializationData):
 
     @property
     def TermsPerContext(self):
-        return
+        return self.__terms_per_context
 
     # endregion
