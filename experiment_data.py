@@ -18,7 +18,7 @@ class CustomSerializationData(SerializationData):
         self.__frames_collection = RuSentiFramesCollection.read_collection(version=frames_version)
         self.__unique_frame_variants = FrameVariantsCollection.create_unique_variants_from_iterable(
             variants_with_id=self.__frames_collection.iter_frame_id_and_variants(),
-            stemmer=self.__stemmer)
+            stemmer=stemmer)
 
     # region public properties
 
@@ -39,7 +39,7 @@ class CustomSerializationData(SerializationData):
         return self.__opinion_formatter
 
     @property
-    def Stemmer(self):
-        return self.__stemmer
+    def DistanceInTermsBetweenOpinionEndsBound(self):
+        return 10
 
     # endregion

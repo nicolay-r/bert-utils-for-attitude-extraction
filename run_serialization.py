@@ -54,7 +54,7 @@ if __name__ == "__main__":
     frames_version = RuSentiFramesVersionArg.read_argument(args)
     rusentrel_version = RuSentRelVersionArg.read_argument(args)
     sample_formatter_type = BertInputFormatterArg.read_argument(args)
-    entity_formatter_type = EnitityFormatterTypesArg(args)
+    entity_formatter_type = EnitityFormatterTypesArg.read_argument(args)
     stemmer = StemmerArg.read_argument(args)
 
     # Initialize logging.
@@ -97,3 +97,5 @@ if __name__ == "__main__":
                                            skip_if_folder_exists=False,
                                            sample_formatter_type=sample_formatter_type,
                                            entity_formatter=entity_formatter)
+
+    engine.run()

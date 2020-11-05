@@ -6,7 +6,8 @@ class EnitityFormatterTypesArg(BaseArg):
 
     @staticmethod
     def read_argument(args):
-        return BertEntityFormattersService.get_type_by_name(args.entity_fmt)
+        name = args.entity_fmt[0]
+        return BertEntityFormattersService.get_type_by_name(name)
 
     @staticmethod
     def add_argument(parser):
