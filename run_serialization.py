@@ -92,7 +92,8 @@ if __name__ == "__main__":
                                    folding_type=FoldingType.Fixed if cv_count == 1 else FoldingType.CrossValidation,
                                    rusentrel_version=rusentrel_version,
                                    is_training=False,
-                                   experiment_io_type=CustomBertIOUtils)
+                                   experiment_io_type=CustomBertIOUtils,
+                                   ruattitudes_version=ra_version)
 
     engine = BertExperimentInputSerializer(experiment=experiment,
                                            skip_if_folder_exists=False,
