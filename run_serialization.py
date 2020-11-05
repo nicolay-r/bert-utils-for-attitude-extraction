@@ -4,12 +4,12 @@ import logging
 
 from arekit.common.experiment.folding.types import FoldingType
 from arekit.common.experiment.scales.factory import create_labels_scaler
-from arekit.contrib.bert.core.input.io_utils import BertIOUtils
-from arekit.contrib.bert.entity.factory import create_bert_entity_formatter
 
+from arekit.contrib.bert.entity.factory import create_bert_entity_formatter
 from arekit.contrib.bert.run_serializer import BertExperimentInputSerializer
 from arekit.contrib.bert.samplers.types import SampleFormattersService
 from arekit.contrib.experiments.factory import create_experiment
+
 from arekit.processing.pos.mystem_wrap import POSMystemWrapper
 from args.bert_formatter import BertInputFormatterArg
 
@@ -24,7 +24,7 @@ from args.stemmer import StemmerArg
 from args.terms_per_context import TermsPerContextArg
 from bert_model_io import BertModelIO
 from experiment_data import CustomSerializationData
-
+from experiment_io import CustomBertIOUtils
 
 if __name__ == "__main__":
 
@@ -91,7 +91,7 @@ if __name__ == "__main__":
                                    folding_type=FoldingType.Fixed if cv_count == 1 else FoldingType.CrossValidation,
                                    rusentrel_version=rusentrel_version,
                                    is_training=False,
-                                   experiment_io_type=BertIOUtils)
+                                   experiment_io_type=CustomBertIOUtils)
 
     engine = BertExperimentInputSerializer(experiment=experiment,
                                            skip_if_folder_exists=False,
