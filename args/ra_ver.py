@@ -1,11 +1,5 @@
-from arekit.contrib.source.ruattitudes.io_utils import RuAttitudesVersions
+from arekit.contrib.source.ruattitudes.io_utils import RuAttitudesVersionsService
 from args.base import BaseArg
-
-
-# RuAttitudes supported versions
-ra_versions = {
-    '1.1': RuAttitudesVersions.V11,
-}
 
 
 class RuAttitudesVersionArg(BaseArg):
@@ -19,11 +13,10 @@ class RuAttitudesVersionArg(BaseArg):
                             dest='ra_version',
                             type=unicode,
                             nargs='?',
-                            choices=list(ra_versions.iterkeys()),
+                            choices=list(RuAttitudesVersionsService.iter_supported_names()),
                             default=False,
                             help='RuAttitudes collection version')
 
     @staticmethod
     def read_argument(args):
-        value = args.ra_version
-        return ra_versions[value] if value is not None else None
+        return RuAttitudesVersionsService.find_by_name(args.ra_version)

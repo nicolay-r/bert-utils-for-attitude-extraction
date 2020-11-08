@@ -9,7 +9,7 @@ from arekit.common.experiment.scales.three import ThreeLabelScaler
 from arekit.common.experiment.scales.two import TwoLabelScaler
 from arekit.common.experiment.data_type import DataType
 from arekit.common.model.labeling.modes import LabelCalculationMode
-from arekit.contrib.bert.supported import BertSampleFormatter
+from arekit.contrib.bert.samplers.types import BertSampleFormatterTypes
 from arekit.contrib.experiments.rusentrel.experiment import RuSentRelExperiment
 from arekit.contrib.source.rusentrel.io_utils import RuSentRelVersions
 
@@ -57,11 +57,11 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    formatters = [BertSampleFormatter.CLASSIF_M,
-                  BertSampleFormatter.QA_M,
-                  BertSampleFormatter.NLI_M,
-                  BertSampleFormatter.QA_B,
-                  BertSampleFormatter.NLI_B]
+    formatters = [BertSampleFormatterTypes.CLASSIF_M,
+                  BertSampleFormatterTypes.QA_M,
+                  BertSampleFormatterTypes.NLI_M,
+                  BertSampleFormatterTypes.QA_B,
+                  BertSampleFormatterTypes.NLI_B]
 
     labels_formatter = ThreeScaleLabelsFormatter()
 

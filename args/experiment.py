@@ -1,8 +1,5 @@
+from arekit.contrib.experiments.types import ExperimentTypesService
 from args.base import BaseArg
-
-# Experiment types.
-SUPERVISED_LEARNING = u'sl'
-SUPERVISED_LEARNING_WITH_DS = u'sl+ds'
 
 
 class ExperimentTypeArg(BaseArg):
@@ -12,14 +9,14 @@ class ExperimentTypeArg(BaseArg):
 
     @staticmethod
     def read_argument(args):
-        return args.exp_type[0]
+        exp_name = args.exp_type[0]
+        return ExperimentTypesService.get_type_by_name(exp_name)
 
     @staticmethod
     def add_argument(parser):
         parser.add_argument('--experiment',
                             dest='exp_type',
                             type=unicode,
-                            choices=[SUPERVISED_LEARNING,
-                                     SUPERVISED_LEARNING_WITH_DS],
+                            choices=list(ExperimentTypesService.iter_supported_names()),
                             nargs=1,
                             help='Experiment type')
