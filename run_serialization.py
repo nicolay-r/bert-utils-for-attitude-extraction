@@ -44,6 +44,14 @@ if __name__ == "__main__":
     EnitityFormatterTypesArg.add_argument(parser)
     StemmerArg.add_argument(parser)
 
+    parser.add_argument('--parse-frames',
+                        dest='parse_frames',
+                        type=bool,
+                        const=True,
+                        default=False,
+                        nargs='?',
+                        help='Perform frames parsing')
+
     parser.add_argument('--no-balancing',
                         dest='balancing_disabled',
                         type=bool,
@@ -67,6 +75,7 @@ if __name__ == "__main__":
     entity_formatter_type = EnitityFormatterTypesArg.read_argument(args)
     stemmer = StemmerArg.read_argument(args)
     balancing_disabled = args.balancing_disabled
+    parse_frames = args.parse_frames
 
     # Initialize logging.
     stream_handler = logging.StreamHandler()
@@ -93,7 +102,7 @@ if __name__ == "__main__":
     experiment_data = CustomSerializationData(
         labels_scaler=create_labels_scaler(labels_count),
         stemmer=stemmer,
-        frames_version=frames_version,
+        frames_version=frames_version if parse_frames else None,
         model_io=model_io,
         terms_per_context=terms_per_context)
 
