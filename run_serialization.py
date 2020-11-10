@@ -27,6 +27,7 @@ from bert_model_io import BertModelIO
 from experiment_data import CustomSerializationData
 from experiment_io import CustomBertIOUtils
 
+
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description='Input data *.tsv serializer')
@@ -89,7 +90,6 @@ if __name__ == "__main__":
     model_io = BertModelIO(full_model_name=full_model_name)
 
     # Create experiment data and all the related information.
-
     experiment_data = CustomSerializationData(
         labels_scaler=create_labels_scaler(labels_count),
         stemmer=stemmer,
