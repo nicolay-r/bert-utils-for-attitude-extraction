@@ -14,24 +14,23 @@ from arekit.contrib.experiments.rusentrel.experiment import RuSentRelExperiment
 from arekit.contrib.source.rusentrel.io_utils import RuSentRelVersions
 
 
-def perform_evaluation(cv_count, data_io, formatter):
+def perform_evaluation(cv_count, exp_data, formatter):
     assert(isinstance(formatter, unicode))
-    assert(isinstance(data_io, DataIO))
+    assert(isinstance(exp_data, DataIO))
 
     model_name = u"{training_type}bert-{formatter}-{label_scale_type}l".format(
         training_type=u'cv-' if cv_count > 1 else u'',
         formatter=formatter,
-        label_scale_type=str(data_io.LabelsScaler))
+        label_scale_type=str(exp_data.LabelsScaler))
 
-    data_io.set_model_name(model_name)
-    data_io.CVFoldingAlgorithm.set_cv_count(cv_count)
+    exp_data.set_model_name(model_name)
+    exp_data.CVFoldingAlgorithm.set_cv_count(cv_count)
 
-    if not exists(data_io.get_model_results_root()):
+    if not exists(exp_data.get_model_results_root()):
         return
 
-    experiment = RuSentRelExperiment(data_io=data_io,
-                                     version=RuSentRelVersions.V11,
-                                     prepare_model_root=False)
+    experiment = RuSentRelExperiment(exp_data=exp_data,
+                                     version=RuSentRelVersions.V11)
 
     eval_tsv(formatter_type=formatter,
              data_type=DataType.Test,
@@ -71,11 +70,11 @@ if __name__ == "__main__":
         # For label_scale.
         for label_scaler in [TwoLabelScaler(), ThreeLabelScaler()]:
 
-            data_io = BertRuSentRelBasedExperimentsDataIO(labels_scaler=label_scaler,
-                                                          init_word_embedding=False)
+            exp_data = BertRuSentRelBasedExperimentsDataIO(labels_scaler=label_scaler,
+                                                           init_word_embedding=False)
 
-            data_io.set_experiment_sources_dir(args.sources_dir[0].decode('utf-8'))
-            data_io.set_experiment_results_dir(args.results_dir[0].decode('utf-8'))
+            exp_data.set_experiment_sources_dir(args.sources_dir[0].decode('utf-8'))
+            exp_data.set_experiment_results_dir(args.results_dir[0].decode('utf-8'))
 
             print(u"cv{cv_count}-l{scaler}".format(cv_count=cv_count,
                                                    scaler=label_scaler))
@@ -89,4 +88,4 @@ if __name__ == "__main__":
             for formatter in it_fmts:
                 perform_evaluation(cv_count=cv_count,
                                    formatter=formatter,
-                                   data_io=data_io)
+                                   exp_data=exp_data)
