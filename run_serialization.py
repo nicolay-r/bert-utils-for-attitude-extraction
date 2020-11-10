@@ -2,7 +2,7 @@
 import argparse
 import logging
 
-from arekit.common.entities.formatters.factory import create_bert_entity_formatter
+from arekit.common.entities.formatters.factory import create_entity_formatter
 from arekit.common.entities.formatters.types import EntityFormattersService
 from arekit.common.experiment.folding.types import FoldingType
 from arekit.common.experiment.scales.factory import create_labels_scaler
@@ -77,7 +77,7 @@ if __name__ == "__main__":
     logger.addHandler(stream_handler)
 
     # Initialize entity formatter.
-    entity_formatter = create_bert_entity_formatter(
+    entity_formatter = create_entity_formatter(
         fmt_type=entity_formatter_type,
         create_russian_pos_tagger_func=lambda: POSMystemWrapper(mystem=stemmer.MystemInstance))
 
