@@ -2,11 +2,11 @@
 import argparse
 import logging
 
+from arekit.common.entities.formatters.factory import create_bert_entity_formatter
+from arekit.common.entities.formatters.types import EntityFormattersService
 from arekit.common.experiment.folding.types import FoldingType
 from arekit.common.experiment.scales.factory import create_labels_scaler
 
-from arekit.contrib.bert.entity.factory import create_bert_entity_formatter
-from arekit.contrib.bert.entity.types import BertEntityFormattersService
 from arekit.contrib.bert.run_serializer import BertExperimentInputSerializer
 from arekit.contrib.bert.samplers.types import SampleFormattersService
 from arekit.contrib.experiments.factory import create_experiment
@@ -84,7 +84,7 @@ if __name__ == "__main__":
     # Setup model name.
     full_model_name = u"bert-{sample_fmt}-{entities_fmt}-{labels_mode}l".format(
         sample_fmt=SampleFormattersService.type_to_name(sample_formatter_type),
-        entities_fmt=BertEntityFormattersService.find_name_by_type(entity_formatter_type),
+        entities_fmt=EntityFormattersService.find_name_by_type(entity_formatter_type),
         labels_mode=int(labels_count))
 
     model_io = BertModelIO(full_model_name=full_model_name)
