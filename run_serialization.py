@@ -43,6 +43,14 @@ if __name__ == "__main__":
     EnitityFormatterTypesArg.add_argument(parser)
     StemmerArg.add_argument(parser)
 
+    parser.add_argument('--no-balancing',
+                        dest='balancing_disabled',
+                        type=bool,
+                        const=True,
+                        default=False,
+                        nargs='?',
+                        help='Disable balancing for Train type during sample serialization process')
+
     # Parsing arguments.
     args = parser.parse_args()
 
@@ -57,6 +65,7 @@ if __name__ == "__main__":
     sample_formatter_type = BertInputFormatterArg.read_argument(args)
     entity_formatter_type = EnitityFormatterTypesArg.read_argument(args)
     stemmer = StemmerArg.read_argument(args)
+    balancing_disabled = args.balancing_disabled
 
     # Initialize logging.
     stream_handler = logging.StreamHandler()
@@ -100,6 +109,7 @@ if __name__ == "__main__":
     engine = BertExperimentInputSerializer(experiment=experiment,
                                            skip_if_folder_exists=False,
                                            sample_formatter_type=sample_formatter_type,
-                                           entity_formatter=entity_formatter)
+                                           entity_formatter=entity_formatter,
+                                           balance_train_samples=not balancing_disabled)
 
     engine.run()
