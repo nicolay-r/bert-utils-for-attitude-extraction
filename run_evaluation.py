@@ -4,7 +4,6 @@ from os.path import exists
 from tqdm import tqdm
 
 from arekit.common.experiment.data.base import DataIO
-from arekit.common.experiment.neutral.annot.labels_fmt import ThreeScaleLabelsFormatter
 from arekit.common.experiment.scales.three import ThreeLabelScaler
 from arekit.common.experiment.scales.two import TwoLabelScaler
 from arekit.common.experiment.data_type import DataType
@@ -12,6 +11,7 @@ from arekit.common.model.labeling.modes import LabelCalculationMode
 from arekit.contrib.bert.samplers.types import BertSampleFormatterTypes
 from arekit.contrib.experiments.rusentrel.experiment import RuSentRelExperiment
 from arekit.contrib.source.rusentrel.io_utils import RuSentRelVersions
+from experiment_data import CustomSerializationData
 
 
 def perform_evaluation(cv_count, exp_data, formatter):
@@ -70,8 +70,8 @@ if __name__ == "__main__":
         # For label_scale.
         for label_scaler in [TwoLabelScaler(), ThreeLabelScaler()]:
 
-            exp_data = BertRuSentRelBasedExperimentsDataIO(labels_scaler=label_scaler,
-                                                           init_word_embedding=False)
+            exp_data = CustomSerializationData(labels_scaler=label_scaler,
+                                               init_word_embedding=False)
 
             exp_data.set_experiment_sources_dir(args.sources_dir[0].decode('utf-8'))
             exp_data.set_experiment_results_dir(args.results_dir[0].decode('utf-8'))
