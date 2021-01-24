@@ -15,6 +15,7 @@ from arekit.processing.pos.mystem_wrap import POSMystemWrapper
 from args.bert_formatter import BertInputFormatterArg
 
 from args.cv_index import CvCountArg
+from args.dist_in_terms_between_ends import DistanceInTermsBetweenAttitudeEndsArg
 from args.entity_fmt import EnitityFormatterTypesArg
 from args.experiment import ExperimentTypeArg
 from args.frames import RuSentiFramesVersionArg
@@ -26,6 +27,26 @@ from args.terms_per_context import TermsPerContextArg
 from bert_model_io import BertModelIO
 from experiment_data import CustomSerializationData
 from experiment_io import CustomBertIOUtils
+
+
+def create_exp_name_suffix(use_balancing, terms_per_context, dist_in_terms_between_att_ends):
+    """ Provides an external parameters that assumes to be synchronized both
+        by serialization and training experiment stages.
+    """
+    assert (isinstance(use_balancing, bool))
+    assert (isinstance(terms_per_context, int))
+    assert (isinstance(dist_in_terms_between_att_ends, int) or dist_in_terms_between_att_ends is None)
+
+    # You may provide your own parameters out there
+    params = [
+        u"balanced" if use_balancing else u"nobalance",
+        u"tpc{}".format(terms_per_context)
+    ]
+
+    if dist_in_terms_between_att_ends is not None:
+        params.append(u"dbe{}".format(dist_in_terms_between_att_ends))
+
+    return u'-'.join(params)
 
 
 if __name__ == "__main__":
@@ -43,6 +64,7 @@ if __name__ == "__main__":
     BertInputFormatterArg.add_argument(parser)
     EnitityFormatterTypesArg.add_argument(parser)
     StemmerArg.add_argument(parser)
+    DistanceInTermsBetweenAttitudeEndsArg.add_argument(parser)
 
     parser.add_argument('--parse-frames',
                         dest='parse_frames',
@@ -60,6 +82,12 @@ if __name__ == "__main__":
                         nargs='?',
                         help='Disable balancing for Train type during sample serialization process')
 
+    parser.add_argument('--balance-samples',
+                        dest='balance_samples',
+                        type=lambda x: (str(x).lower() == 'true'),
+                        nargs=1,
+                        help='Balanced input of the Train set"')
+
     # Parsing arguments.
     args = parser.parse_args()
 
@@ -73,6 +101,8 @@ if __name__ == "__main__":
     rusentrel_version = RuSentRelVersionArg.read_argument(args)
     sample_formatter_type = BertInputFormatterArg.read_argument(args)
     entity_formatter_type = EnitityFormatterTypesArg.read_argument(args)
+    dist_in_terms_between_attitude_ends = DistanceInTermsBetweenAttitudeEndsArg.read_argument(args)
+    balance_samples = args.balance_samples[0]
     stemmer = StemmerArg.read_argument(args)
     balancing_disabled = args.balancing_disabled
     parse_frames = args.parse_frames
@@ -106,14 +136,20 @@ if __name__ == "__main__":
         model_io=model_io,
         terms_per_context=terms_per_context)
 
+    extra_name_suffix = create_exp_name_suffix(
+        use_balancing=balance_samples,
+        terms_per_context=terms_per_context,
+        dist_in_terms_between_att_ends=dist_in_terms_between_attitude_ends)
+
     # Initialize experiment.
     experiment = create_experiment(exp_type=exp_type,
                                    experiment_data=experiment_data,
                                    folding_type=FoldingType.Fixed if cv_count == 1 else FoldingType.CrossValidation,
                                    rusentrel_version=rusentrel_version,
-                                   is_training=True,
                                    experiment_io_type=CustomBertIOUtils,
-                                   ruattitudes_version=ra_version)
+                                   ruattitudes_version=ra_version,
+                                   load_ruattitude_docs=True,
+                                   extra_name_suffix=extra_name_suffix)
 
     engine = BertExperimentInputSerializer(experiment=experiment,
                                            skip_if_folder_exists=False,
