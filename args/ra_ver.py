@@ -14,7 +14,7 @@ class RuAttitudesVersionArg(BaseArg):
                             type=unicode,
                             nargs='?',
                             choices=list(RuAttitudesVersionsService.iter_supported_names()),
-                            default=False,
+                            default=None,
                             help='RuAttitudes collection version')
 
     @staticmethod
