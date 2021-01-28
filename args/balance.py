@@ -16,8 +16,6 @@ class UseBalancingArg(BaseArg):
     def add_argument(parser):
         parser.add_argument('--balance-samples',
                             dest='balance_samples',
-                            type=bool,
-                            default=UseBalancingArg.__default,
+                            type=lambda x: (str(x).lower() == 'true'),
                             nargs=1,
-                            help='Use balancing for Train type during sample serialization process "'
-                                 '"(Default: {})'.format(UseBalancingArg.__default))
+                            help='Balanced input of the Train set"')

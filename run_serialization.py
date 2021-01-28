@@ -12,6 +12,7 @@ from arekit.contrib.bert.samplers.types import SampleFormattersService
 from arekit.contrib.experiments.factory import create_experiment
 
 from arekit.processing.pos.mystem_wrap import POSMystemWrapper
+from args.balance import UseBalancingArg
 from args.bert_formatter import BertInputFormatterArg
 
 from args.cv_index import CvCountArg
@@ -83,12 +84,6 @@ if __name__ == "__main__":
                         nargs='?',
                         help='Disable balancing for Train type during sample serialization process')
 
-    parser.add_argument('--balance-samples',
-                        dest='balance_samples',
-                        type=lambda x: (str(x).lower() == 'true'),
-                        nargs=1,
-                        help='Balanced input of the Train set"')
-
     # Parsing arguments.
     args = parser.parse_args()
 
@@ -100,12 +95,11 @@ if __name__ == "__main__":
     terms_per_context = TermsPerContextArg.read_argument(args)
     frames_version = RuSentiFramesVersionArg.read_argument(args)
     rusentrel_version = RuSentRelVersionArg.read_argument(args)
+    balance_samples = UseBalancingArg.read_argument(args)
     sample_formatter_type = BertInputFormatterArg.read_argument(args)
     entity_formatter_type = EnitityFormatterTypesArg.read_argument(args)
     dist_in_terms_between_attitude_ends = DistanceInTermsBetweenAttitudeEndsArg.read_argument(args)
-    balance_samples = args.balance_samples[0]
     stemmer = StemmerArg.read_argument(args)
-    balancing_disabled = args.balancing_disabled
     parse_frames = args.parse_frames
 
     # Initialize logging.
@@ -156,6 +150,6 @@ if __name__ == "__main__":
                                            skip_if_folder_exists=False,
                                            sample_formatter_type=sample_formatter_type,
                                            entity_formatter=entity_formatter,
-                                           balance_train_samples=not balancing_disabled)
+                                           balance_train_samples=balance_samples)
 
     engine.run()
