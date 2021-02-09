@@ -3,12 +3,10 @@ import argparse
 import logging
 
 from arekit.common.entities.formatters.factory import create_entity_formatter
-from arekit.common.entities.formatters.types import EntityFormattersService
 from arekit.common.experiment.folding.types import FoldingType
 from arekit.common.experiment.scales.factory import create_labels_scaler
 
 from arekit.contrib.bert.run_serializer import BertExperimentInputSerializer
-from arekit.contrib.bert.samplers.types import SampleFormattersService
 from arekit.contrib.experiments.factory import create_experiment
 
 from arekit.processing.pos.mystem_wrap import POSMystemWrapper
@@ -26,6 +24,7 @@ from args.rusentrel import RuSentRelVersionArg
 from args.stemmer import StemmerArg
 from args.terms_per_context import TermsPerContextArg
 from bert_model_io import BertModelIO
+from common import create_full_model_name
 from experiment_data import CustomSerializationData
 from experiment_io import CustomBertIOUtils
 
@@ -116,10 +115,9 @@ if __name__ == "__main__":
         create_russian_pos_tagger_func=lambda: POSMystemWrapper(mystem=stemmer.MystemInstance))
 
     # Setup model name.
-    full_model_name = u"bert-{sample_fmt}-{entities_fmt}-{labels_mode}l".format(
-        sample_fmt=SampleFormattersService.type_to_name(sample_formatter_type),
-        entities_fmt=EntityFormattersService.find_name_by_type(entity_formatter_type),
-        labels_mode=int(labels_count))
+    full_model_name = create_full_model_name(sample_fmt_type=sample_formatter_type,
+                                             entities_fmt_type=entity_formatter_type,
+                                             labels_count=labels_count)
 
     model_io = BertModelIO(full_model_name=full_model_name)
 
