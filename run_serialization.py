@@ -23,7 +23,7 @@ from args.rusentrel import RuSentRelVersionArg
 from args.stemmer import StemmerArg
 from args.terms_per_context import TermsPerContextArg
 from bert_model_io import BertModelIO
-from common import create_full_model_name
+from common import Common
 from data_serialization import CustomSerializationData
 from experiment_io import CustomBertIOUtils
 
@@ -114,9 +114,9 @@ if __name__ == "__main__":
         create_russian_pos_tagger_func=lambda: POSMystemWrapper(mystem=stemmer.MystemInstance))
 
     # Setup model name.
-    full_model_name = create_full_model_name(sample_fmt_type=sample_formatter_type,
-                                             entities_fmt_type=entity_formatter_type,
-                                             labels_count=labels_count)
+    full_model_name = Common.create_full_model_name(sample_fmt_type=sample_formatter_type,
+                                                    entities_fmt_type=entity_formatter_type,
+                                                    labels_count=labels_count)
 
     model_io = BertModelIO(full_model_name=full_model_name)
 

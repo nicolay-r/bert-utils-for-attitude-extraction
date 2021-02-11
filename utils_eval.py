@@ -29,7 +29,8 @@ from args.rusentrel import RuSentRelVersionArg
 from args.stemmer import StemmerArg
 from args.terms_per_context import TermsPerContextArg
 from bert_model_io import BertModelIO
-from common import create_full_model_name
+from callback import Callback
+from common import Common
 
 from data_training import CustomTrainingData
 from experiment_io import CustomBertIOUtils
@@ -74,9 +75,9 @@ if __name__ == "__main__":
     experiment_io_type = CustomBertIOUtils
     eval_mode = EvaluationModes.Extraction if labels_count == 3 else EvaluationModes.Classification
 
-    full_model_name = create_full_model_name(sample_fmt_type=sample_formatter_type,
-                                             entities_fmt_type=entity_formatter_type,
-                                             labels_count=int(labels_count))
+    full_model_name = Common.create_full_model_name(sample_fmt_type=sample_formatter_type,
+                                                    entities_fmt_type=entity_formatter_type,
+                                                    labels_count=int(labels_count))
 
     extra_name_suffix = create_exp_name_suffix(use_balancing=balance_samples,
                                                terms_per_context=terms_per_context,
@@ -118,52 +119,66 @@ if __name__ == "__main__":
         # Providing opinions reader.
         opinions_tsv_filepath = exp_io.get_input_opinions_filepath(data_type=data_type)
         # Providing samples reader.
-        samples_tsv_filepath = experiment.ExperimentIO.get_input_sample_filepath(data_type=data_type)
+        samples_tsv_filepath = exp_io.get_input_sample_filepath(data_type=data_type)
+        # Obtaining the root model directory.
+        target_dir = experiment.ExperimentIO.get_target_dir()
 
-        for epoch_index in range(100):
+        # Creating results logger
+        callback = Callback(it_index=it_index, data_type=data_type)
+        callback.set_log_dir(join(target_dir, Common.log_dir))
 
-            result_filename_template = RESULTS_TEMPLATE_FILENAME.format(
-                it_index=it_index,
-                epoch_index=epoch_index,
-                # TODO. Bring this onto cmd_args level.
-                state_name=u"multi_cased_L-12_H-768_A-12")
+        with callback:
 
-            result_filepath = join(experiment.ExperimentIO.get_target_dir(), result_filename_template)
+            for epoch_index in range(100):
 
-            if not exists(result_filepath):
-                continue
+                result_filename_template = RESULTS_TEMPLATE_FILENAME.format(
+                    it_index=it_index,
+                    epoch_index=epoch_index,
+                    # TODO. Bring this onto cmd_args level.
+                    state_name=u"multi_cased_L-12_H-768_A-12")
 
-            print "Found:", result_filepath
+                result_filepath = join(target_dir, result_filename_template)
 
-            # We utilize google bert format, where every row
-            # consist of label probabilities per every class
-            output = GoogleBertMulticlassOutput(
-                labels_scaler=labels_scaler,
-                samples_reader=InputSampleReader.from_tsv(filepath=samples_tsv_filepath,
-                                                          row_ids_provider= row_id_provider),
-                has_output_header=False)
+                if not exists(result_filepath):
+                    continue
 
-            # iterate opinion collections.
-            collections_iter = OutputToOpinionCollectionsConverter.iter_opinion_collections(
-                output_filepath=result_filepath,
-                opinions_reader=InputOpinionReader.from_tsv(opinions_tsv_filepath, compression='infer'),
-                labels_scaler=labels_scaler,
-                create_opinion_collection_func=experiment.OpinionOperations.create_opinion_collection,
-                keep_doc_id_func=lambda doc_id: doc_id in cmp_doc_ids_set,
-                label_calculation_mode=LabelCalculationMode.AVERAGE,
-                output=output)
+                print "Found:", result_filepath
 
-            save_opinion_collections(
-                opinion_collection_iter=collections_iter,
-                create_file_func=lambda doc_id: exp_io.create_result_opinion_collection_filepath(
-                    data_type=DataType.Test,
-                    doc_id=doc_id,
-                    epoch_index=epoch_index),
-                save_to_file_func=lambda filepath, collection: opin_fmt.save_to_file(
-                    collection=collection,
-                    filepath=filepath,
-                    labels_formatter=labels_formatter))
+                # We utilize google bert format, where every row
+                # consist of label probabilities per every class
+                output = GoogleBertMulticlassOutput(
+                    labels_scaler=labels_scaler,
+                    samples_reader=InputSampleReader.from_tsv(filepath=samples_tsv_filepath,
+                                                              row_ids_provider= row_id_provider),
+                    has_output_header=False)
 
-            # evaluate
-            experiment.evaluate(data_type=DataType.Test,
-                                epoch_index=epoch_index)
+                # iterate opinion collections.
+                collections_iter = OutputToOpinionCollectionsConverter.iter_opinion_collections(
+                    output_filepath=result_filepath,
+                    opinions_reader=InputOpinionReader.from_tsv(opinions_tsv_filepath, compression='infer'),
+                    labels_scaler=labels_scaler,
+                    create_opinion_collection_func=experiment.OpinionOperations.create_opinion_collection,
+                    keep_doc_id_func=lambda doc_id: doc_id in cmp_doc_ids_set,
+                    label_calculation_mode=LabelCalculationMode.AVERAGE,
+                    output=output)
+
+                save_opinion_collections(
+                    opinion_collection_iter=collections_iter,
+                    create_file_func=lambda doc_id: exp_io.create_result_opinion_collection_filepath(
+                        data_type=DataType.Test,
+                        doc_id=doc_id,
+                        epoch_index=epoch_index),
+                    save_to_file_func=lambda filepath, collection: opin_fmt.save_to_file(
+                        collection=collection,
+                        filepath=filepath,
+                        labels_formatter=labels_formatter))
+
+                # evaluate
+                result = experiment.evaluate(data_type=DataType.Test,
+                                             epoch_index=epoch_index)
+                result.calculate()
+
+                # saving results.
+                callback.write_results(result=result,
+                                       data_type=data_type,
+                                       epoch_index=epoch_index)
