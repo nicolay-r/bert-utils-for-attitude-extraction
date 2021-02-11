@@ -8,11 +8,10 @@ from arekit.common.experiment.scales.factory import create_labels_scaler
 
 from arekit.contrib.bert.run_serializer import BertExperimentInputSerializer
 from arekit.contrib.experiments.factory import create_experiment
-
 from arekit.processing.pos.mystem_wrap import POSMystemWrapper
+
 from args.balance import UseBalancingArg
 from args.bert_formatter import BertInputFormatterArg
-
 from args.cv_index import CvCountArg
 from args.dist_in_terms_between_ends import DistanceInTermsBetweenAttitudeEndsArg
 from args.entity_fmt import EnitityFormatterTypesArg
@@ -25,7 +24,7 @@ from args.stemmer import StemmerArg
 from args.terms_per_context import TermsPerContextArg
 from bert_model_io import BertModelIO
 from common import create_full_model_name
-from experiment_data import CustomSerializationData
+from data_serialization import CustomSerializationData
 from experiment_io import CustomBertIOUtils
 
 

@@ -1,18 +1,21 @@
 import argparse
 from os.path import exists, join
 
+from arekit.common.evaluation.evaluators.modes import EvaluationModes
+from arekit.common.evaluation.evaluators.two_class import TwoClassEvaluator
 from arekit.common.experiment.data_type import DataType
 from arekit.common.experiment.folding.types import FoldingType
 from arekit.common.experiment.input.providers.row_ids.multiple import MultipleIDProvider
 from arekit.common.experiment.input.readers.opinion import InputOpinionReader
 from arekit.common.experiment.input.readers.sample import InputSampleReader
-from arekit.common.experiment.output.multiple import MulticlassOutput
 from arekit.common.experiment.output.opinions.converter import OutputToOpinionCollectionsConverter
 from arekit.common.experiment.output.opinions.writer import save_opinion_collections
 from arekit.common.experiment.scales.factory import create_labels_scaler
 from arekit.common.model.labeling.modes import LabelCalculationMode
+from arekit.contrib.bert.output.google_bert import GoogleBertMulticlassOutput
 from arekit.contrib.experiments.factory import create_experiment
 from arekit.contrib.source.rusentrel.labels_fmt import RuSentRelLabelsFormatter
+from arekit.contrib.source.rusentrel.opinions.formatter import RuSentRelOpinionCollectionFormatter
 from args.balance import UseBalancingArg
 from args.bert_formatter import BertInputFormatterArg
 from args.cv_index import CvCountArg
@@ -27,7 +30,8 @@ from args.stemmer import StemmerArg
 from args.terms_per_context import TermsPerContextArg
 from bert_model_io import BertModelIO
 from common import create_full_model_name
-from experiment_data import CustomSerializationData
+
+from data_training import CustomTrainingData
 from experiment_io import CustomBertIOUtils
 from run_serialization import create_exp_name_suffix
 
@@ -68,6 +72,7 @@ if __name__ == "__main__":
     dist_in_terms_between_attitude_ends = DistanceInTermsBetweenAttitudeEndsArg.read_argument(args)
     frames_version = RuSentiFramesVersionArg.read_argument(args)
     experiment_io_type = CustomBertIOUtils
+    eval_mode = EvaluationModes.Extraction if labels_count == 3 else EvaluationModes.Classification
 
     full_model_name = create_full_model_name(sample_fmt_type=sample_formatter_type,
                                              entities_fmt_type=entity_formatter_type,
@@ -78,12 +83,16 @@ if __name__ == "__main__":
                                                dist_in_terms_between_att_ends=dist_in_terms_between_attitude_ends)
 
     model_io = BertModelIO(full_model_name=full_model_name)
-    experiment_data = CustomSerializationData(
+
+    # Setup dafault evaluator.
+    evaluator = TwoClassEvaluator(eval_mode)
+
+    experiment_data = CustomTrainingData(
         labels_scaler=create_labels_scaler(labels_count),
         stemmer=stemmer,
-        frames_version=None,
-        model_io=model_io,
-        terms_per_context=terms_per_context)
+        evaluator=evaluator,
+        opinion_formatter=RuSentRelOpinionCollectionFormatter(),
+        model_io=model_io)
 
     # Composing experiment.
     experiment = create_experiment(exp_type=exp_type,
@@ -101,6 +110,7 @@ if __name__ == "__main__":
     exp_io = experiment.ExperimentIO
     opin_fmt = experiment.DataIO.OpinionFormatter
     labels_formatter = RuSentRelLabelsFormatter()
+    row_id_provider = MultipleIDProvider()
 
     # TODO. bring epochs_count onto cmd_args level.
     for it_index in range(cv_count):
@@ -125,18 +135,23 @@ if __name__ == "__main__":
 
             print "Found:", result_filepath
 
+            # We utilize google bert format, where every row
+            # consist of label probabilities per every class
+            output = GoogleBertMulticlassOutput(
+                labels_scaler=labels_scaler,
+                samples_reader=InputSampleReader.from_tsv(filepath=samples_tsv_filepath,
+                                                          row_ids_provider= row_id_provider),
+                has_output_header=False)
+
             # iterate opinion collections.
             collections_iter = OutputToOpinionCollectionsConverter.iter_opinion_collections(
                 output_filepath=result_filepath,
-                read_header_in_output=False,
                 opinions_reader=InputOpinionReader.from_tsv(opinions_tsv_filepath, compression='infer'),
                 labels_scaler=labels_scaler,
                 create_opinion_collection_func=experiment.OpinionOperations.create_opinion_collection,
                 keep_doc_id_func=lambda doc_id: doc_id in cmp_doc_ids_set,
                 label_calculation_mode=LabelCalculationMode.AVERAGE,
-                output=MulticlassOutput(labels_scaler),
-                samples_reader=InputSampleReader.from_tsv(filepath=samples_tsv_filepath,
-                                                          row_ids_provider=MultipleIDProvider()))
+                output=output)
 
             save_opinion_collections(
                 opinion_collection_iter=collections_iter,
