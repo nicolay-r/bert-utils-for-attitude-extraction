@@ -126,7 +126,8 @@ if __name__ == "__main__":
         stemmer=stemmer,
         frames_version=frames_version if parse_frames else None,
         model_io=model_io,
-        terms_per_context=terms_per_context)
+        terms_per_context=terms_per_context,
+        dist_in_terms_between_attitude_ends=dist_in_terms_between_attitude_ends)
 
     extra_name_suffix = create_exp_name_suffix(
         use_balancing=balance_samples,

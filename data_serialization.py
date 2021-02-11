@@ -10,7 +10,8 @@ from arekit.contrib.source.rusentrel.opinions.formatter import RuSentRelOpinionC
 
 class CustomSerializationData(SerializationData):
 
-    def __init__(self, labels_scaler, stemmer, frames_version, model_io, terms_per_context):
+    def __init__(self, labels_scaler, stemmer, frames_version, model_io, terms_per_context,
+                 dist_in_terms_between_attitude_ends):
         assert(isinstance(frames_version, RuSentiFramesVersions) or frames_version is None)
         assert(isinstance(model_io, BertModelIO))
         assert(isinstance(terms_per_context, int))
@@ -20,6 +21,7 @@ class CustomSerializationData(SerializationData):
         self.__model_io = model_io
         self.__terms_per_context = terms_per_context
         self.__opinion_formatter = RuSentRelOpinionCollectionFormatter()
+        self.__dist_in_terms_between_attitude_ends = dist_in_terms_between_attitude_ends
 
         self.__frames_collection = None
         self.__unique_frame_variants = None
@@ -50,7 +52,7 @@ class CustomSerializationData(SerializationData):
 
     @property
     def DistanceInTermsBetweenOpinionEndsBound(self):
-        return 10
+        return self.__dist_in_terms_between_attitude_ends
 
     @property
     def TermsPerContext(self):
