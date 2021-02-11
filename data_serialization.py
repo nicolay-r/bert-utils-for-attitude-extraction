@@ -16,12 +16,13 @@ class CustomSerializationData(SerializationData):
         assert(isinstance(model_io, BertModelIO))
         assert(isinstance(terms_per_context, int))
 
+        self.__dist_in_terms_between_attitude_ends = dist_in_terms_between_attitude_ends
+
         super(CustomSerializationData, self).__init__(labels_scaler, stemmer)
 
         self.__model_io = model_io
         self.__terms_per_context = terms_per_context
         self.__opinion_formatter = RuSentRelOpinionCollectionFormatter()
-        self.__dist_in_terms_between_attitude_ends = dist_in_terms_between_attitude_ends
 
         self.__frames_collection = None
         self.__unique_frame_variants = None
