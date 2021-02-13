@@ -1,23 +1,30 @@
 from os.path import join
 
 from arekit.common.utils import create_dir_if_not_exists
+from arekit.contrib.bert.callback import Callback
 from callback_log_iter import create_iteration_verbose_eval_msg, create_iteration_short_eval_msg
 from common import Common
 
 
-class Callback(object):
+class CustomCallback(Callback):
 
     __log_eval_iter_verbose_filename = u"cb_eval_verbose_{iter}_{dtype}.log"
 
-    def __init__(self, it_index, data_type):
-        self.__it_index = it_index
+    def __init__(self, data_type):
         self.__data_type = data_type
+
         self.__eval_verbose_file = None
         self.__eval_short_file = None
 
-    def set_log_dir(self, log_dir):
-        assert (isinstance(log_dir, unicode))
-        self.__log_dir = log_dir
+        self.__it_index = None
+        self.__log_dir = None
+
+    def set_iter_index(self, it_index):
+        self.__it_index = it_index
+
+    def set_log_dir(self, target_dir):
+        assert(isinstance(target_dir, unicode))
+        self.__log_dir = join(target_dir, Common.log_dir)
 
     def write_results(self, result, data_type, epoch_index):
         eval_verbose_msg = create_iteration_verbose_eval_msg(eval_result=result,
@@ -56,3 +63,5 @@ class Callback(object):
 
         if self.__eval_short_file is not None:
             self.__eval_short_file.close()
+
+        self.__it_index = None

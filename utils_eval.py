@@ -1,20 +1,13 @@
 import argparse
-from os.path import exists, join
 
 from arekit.common.evaluation.evaluators.modes import EvaluationModes
 from arekit.common.evaluation.evaluators.two_class import TwoClassEvaluator
 from arekit.common.experiment.data_type import DataType
 from arekit.common.experiment.folding.types import FoldingType
-from arekit.common.experiment.input.providers.row_ids.multiple import MultipleIDProvider
-from arekit.common.experiment.input.readers.opinion import InputOpinionReader
-from arekit.common.experiment.input.readers.sample import InputSampleReader
-from arekit.common.experiment.output.opinions.converter import OutputToOpinionCollectionsConverter
-from arekit.common.experiment.output.opinions.writer import save_opinion_collections
 from arekit.common.experiment.scales.factory import create_labels_scaler
-from arekit.common.model.labeling.modes import LabelCalculationMode
-from arekit.contrib.bert.output.google_bert import GoogleBertMulticlassOutput
+from arekit.contrib.bert.output.eval_helper import EvalHelper
+from arekit.contrib.bert.run_evaluation import LanguageModelExperimentEvaluator
 from arekit.contrib.experiments.factory import create_experiment
-from arekit.contrib.source.rusentrel.labels_fmt import RuSentRelLabelsFormatter
 from arekit.contrib.source.rusentrel.opinions.formatter import RuSentRelOpinionCollectionFormatter
 from args.balance import UseBalancingArg
 from args.bert_formatter import BertInputFormatterArg
@@ -29,14 +22,27 @@ from args.rusentrel import RuSentRelVersionArg
 from args.stemmer import StemmerArg
 from args.terms_per_context import TermsPerContextArg
 from bert_model_io import BertModelIO
-from callback import Callback
+from callback import CustomCallback
 from common import Common
 
 from data_training import CustomTrainingData
 from experiment_io import CustomBertIOUtils
 from run_serialization import create_exp_name_suffix
 
-RESULTS_TEMPLATE_FILENAME = u"test_results_i{it_index}_e{epoch_index}_s{state_name}.tsv"
+
+class CustomEvalHelper(EvalHelper):
+
+    RESULTS_TEMPLATE_FILENAME = u"test_results_i{it_index}_e{epoch_index}_s{state_name}.tsv"
+
+    def __init__(self, log_dir, state_name):
+        self.__log_dir = log_dir
+        self.__state_name = state_name
+
+    def get_results_filename(self, iter_index, epoch_index):
+        return CustomEvalHelper.RESULTS_TEMPLATE_FILENAME.format(it_index=iter_index,
+                                                                 epoch_index=epoch_index,
+                                                                 state_name=self.__state_name)
+
 
 if __name__ == "__main__":
 
@@ -85,7 +91,7 @@ if __name__ == "__main__":
 
     model_io = BertModelIO(full_model_name=full_model_name)
 
-    # Setup dafault evaluator.
+    # Setup default evaluator.
     evaluator = TwoClassEvaluator(eval_mode)
 
     experiment_data = CustomTrainingData(
@@ -93,7 +99,8 @@ if __name__ == "__main__":
         stemmer=stemmer,
         evaluator=evaluator,
         opinion_formatter=RuSentRelOpinionCollectionFormatter(),
-        model_io=model_io)
+        model_io=model_io,
+        callback=CustomCallback(DataType.Test))
 
     # Composing experiment.
     experiment = create_experiment(exp_type=exp_type,
@@ -105,80 +112,13 @@ if __name__ == "__main__":
                                    load_ruattitude_docs=False,
                                    extra_name_suffix=extra_name_suffix)
 
-    # Parameters required for evaluation.
-    data_type = DataType.Test
-    cmp_doc_ids_set = set(experiment.DocumentOperations.iter_doc_ids_to_compare())
-    exp_io = experiment.ExperimentIO
-    opin_fmt = experiment.DataIO.OpinionFormatter
-    labels_formatter = RuSentRelLabelsFormatter()
-    row_id_provider = MultipleIDProvider()
+    eval_helper = CustomEvalHelper(log_dir=Common.log_dir,
+                                   state_name=u"multi_cased_L-12_H-768_A-12")
 
-    # TODO. bring epochs_count onto cmd_args level.
-    for it_index in range(cv_count):
+    engine = LanguageModelExperimentEvaluator(experiment=experiment,
+                                              data_type=DataType.Test,
+                                              eval_helper=eval_helper,
+                                              max_epochs_count=100)
 
-        # Providing opinions reader.
-        opinions_tsv_filepath = exp_io.get_input_opinions_filepath(data_type=data_type)
-        # Providing samples reader.
-        samples_tsv_filepath = exp_io.get_input_sample_filepath(data_type=data_type)
-        # Obtaining the root model directory.
-        target_dir = experiment.ExperimentIO.get_target_dir()
-
-        # Creating results logger
-        callback = Callback(it_index=it_index, data_type=data_type)
-        callback.set_log_dir(join(target_dir, Common.log_dir))
-
-        with callback:
-
-            for epoch_index in range(100):
-
-                result_filename_template = RESULTS_TEMPLATE_FILENAME.format(
-                    it_index=it_index,
-                    epoch_index=epoch_index,
-                    # TODO. Bring this onto cmd_args level.
-                    state_name=u"multi_cased_L-12_H-768_A-12")
-
-                result_filepath = join(target_dir, result_filename_template)
-
-                if not exists(result_filepath):
-                    continue
-
-                print "Found:", result_filepath
-
-                # We utilize google bert format, where every row
-                # consist of label probabilities per every class
-                output = GoogleBertMulticlassOutput(
-                    labels_scaler=labels_scaler,
-                    samples_reader=InputSampleReader.from_tsv(filepath=samples_tsv_filepath,
-                                                              row_ids_provider= row_id_provider),
-                    has_output_header=False)
-
-                # iterate opinion collections.
-                collections_iter = OutputToOpinionCollectionsConverter.iter_opinion_collections(
-                    output_filepath=result_filepath,
-                    opinions_reader=InputOpinionReader.from_tsv(opinions_tsv_filepath, compression='infer'),
-                    labels_scaler=labels_scaler,
-                    create_opinion_collection_func=experiment.OpinionOperations.create_opinion_collection,
-                    keep_doc_id_func=lambda doc_id: doc_id in cmp_doc_ids_set,
-                    label_calculation_mode=LabelCalculationMode.AVERAGE,
-                    output=output)
-
-                save_opinion_collections(
-                    opinion_collection_iter=collections_iter,
-                    create_file_func=lambda doc_id: exp_io.create_result_opinion_collection_filepath(
-                        data_type=DataType.Test,
-                        doc_id=doc_id,
-                        epoch_index=epoch_index),
-                    save_to_file_func=lambda filepath, collection: opin_fmt.save_to_file(
-                        collection=collection,
-                        filepath=filepath,
-                        labels_formatter=labels_formatter))
-
-                # evaluate
-                result = experiment.evaluate(data_type=DataType.Test,
-                                             epoch_index=epoch_index)
-                result.calculate()
-
-                # saving results.
-                callback.write_results(result=result,
-                                       data_type=data_type,
-                                       epoch_index=epoch_index)
+    # Starting evaluation process.
+    engine.run()
