@@ -1,4 +1,4 @@
-from os.path import join
+from os.path import join, exists
 
 from arekit.common.utils import create_dir_if_not_exists
 from arekit.contrib.bert.callback import Callback
@@ -19,12 +19,27 @@ class CustomCallback(Callback):
         self.__it_index = None
         self.__log_dir = None
 
+    # region private methods
+
+    def __create_short_log_filepath(self):
+        return join(self.__log_dir,
+                    Common.create_log_eval_filename(iter_index=self.__it_index, data_type=self.__data_type))
+
+    # endregion
+
+    # region public methods
+
     def set_iter_index(self, it_index):
         self.__it_index = it_index
 
     def set_log_dir(self, target_dir):
         assert(isinstance(target_dir, unicode))
         self.__log_dir = join(target_dir, Common.log_dir)
+
+    def check_log_exists(self):
+        short_log_filepath = self.__create_short_log_filepath()
+        print short_log_filepath
+        return exists(short_log_filepath)
 
     def write_results(self, result, data_type, epoch_index):
         eval_verbose_msg = create_iteration_verbose_eval_msg(eval_result=result,
@@ -46,9 +61,7 @@ class CustomCallback(Callback):
             self.__log_dir,
             self.__log_eval_iter_verbose_filename.format(iter=self.__it_index, dtype=self.__data_type))
 
-        eval_short_log_filepath = join(
-            self.__log_dir,
-            Common.create_log_eval_filename(iter_index=self.__it_index, data_type=self.__data_type))
+        eval_short_log_filepath = self.__create_short_log_filepath()
 
         create_dir_if_not_exists(eval_verbose_log_filepath)
         create_dir_if_not_exists(eval_short_log_filepath)
@@ -65,3 +78,5 @@ class CustomCallback(Callback):
             self.__eval_short_file.close()
 
         self.__it_index = None
+
+    # endregion
