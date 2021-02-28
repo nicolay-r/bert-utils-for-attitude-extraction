@@ -254,6 +254,8 @@ class ResultsTable(object):
         if len(it_results) == 1:
             return it_results[0]
 
+        return np.mean(it_results)
+
     @staticmethod
     def __create_exp_type_or_none(ra_version):
         assert(isinstance(ra_version, RuAttitudesVersions) or ra_version is None)
@@ -273,8 +275,8 @@ class ResultsTable(object):
         # This allows us to combine neut with non-neut (for 2-scale).
         ds_type_name = exp_type_name.replace(u'_neut', '')
         # IMPORTANT:
-        # Removing first (folding-type) prefix
-        model_str = model_dir[model_dir.index(u'_')+1:]
+        # Removing last label suffix (WARNING: 3 is fixed)
+        model_str = model_dir[:-3]
 
         # finding the related row index in a df table.
         row_ids = self.__df.index[(self.__df[self.MODEL_NAME_COL] == model_str) &
@@ -548,7 +550,7 @@ if __name__ == "__main__":
                         dest='result_types',
                         type=unicode,
                         nargs='*',
-                        default=[ResultType.F1.value],
+                        default=[ResultType.F1LastTest.value],
                         choices=[rt.value for rt in ResultType],
                         help="Metric selection which will be used for table cell values")
 

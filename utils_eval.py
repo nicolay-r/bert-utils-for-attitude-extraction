@@ -1,5 +1,4 @@
 import argparse
-
 from arekit.common.entities.formatters.types import EntityFormattersService
 from arekit.common.evaluation.evaluators.modes import EvaluationModes
 from arekit.common.evaluation.evaluators.two_class import TwoClassEvaluator
@@ -9,7 +8,7 @@ from arekit.common.experiment.scales.factory import create_labels_scaler
 
 from arekit.contrib.bert.output.eval_helper import EvalHelper
 from arekit.contrib.bert.run_evaluation import LanguageModelExperimentEvaluator
-from arekit.contrib.bert.samplers.types import SampleFormattersService, BertSampleFormatterTypes
+from arekit.contrib.bert.samplers.types import BertSampleFormatterTypes
 from arekit.contrib.experiments.factory import create_experiment
 from arekit.contrib.experiments.types import ExperimentTypes
 from arekit.contrib.source.ruattitudes.io_utils import RuAttitudesVersionsService
