@@ -274,9 +274,7 @@ class ResultsTable(object):
         # IMPORTANT:
         # This allows us to combine neut with non-neut (for 2-scale).
         ds_type_name = exp_type_name.replace(u'_neut', '')
-        # IMPORTANT:
-        # Removing last label suffix (WARNING: 3 is fixed)
-        model_str = model_dir[:-3]
+        model_str = model_dir
 
         # finding the related row index in a df table.
         row_ids = self.__df.index[(self.__df[self.MODEL_NAME_COL] == model_str) &
@@ -472,6 +470,8 @@ class FineTunedResultsProvider(ResultsTable):
             return origin_name
 
         ra_version = RuAttitudesVersionsService.find_by_name(exp_type)
+        print Common.combine_tag_with_full_model_name(full_model_name=origin_name,
+                                                      tag=Common.get_tag_by_ruattitudes_version(ra_version))
         return Common.combine_tag_with_full_model_name(full_model_name=origin_name,
                                                        tag=Common.get_tag_by_ruattitudes_version(ra_version))
 
