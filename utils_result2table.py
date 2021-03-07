@@ -446,16 +446,9 @@ class FineTunedResultsProvider(ResultsTable):
     # for fine-tunning.
     __source_ra_version = None
 
-    __fine_tuned_suffix = u"{model_name}-ft-{model_tag}"
-
     def _create_output_basename(self):
         base_name = super(FineTunedResultsProvider, self)._create_output_basename()
         return base_name + u'-ft'
-
-    @staticmethod
-    def __model_tag_from_ra_version(ra_version):
-        assert(isinstance(ra_version, RuAttitudesVersions))
-        return Common.get_tag_by_ruattitudes_version(ra_version)
 
     def _create_exp_dir(self, cv_count, ra_version, folding_type, labels_count, rsr_version):
         return super(FineTunedResultsProvider, self)._create_exp_dir(cv_count=cv_count,
@@ -479,9 +472,8 @@ class FineTunedResultsProvider(ResultsTable):
             return origin_name
 
         ra_version = RuAttitudesVersionsService.find_by_name(exp_type)
-
-        return self.__fine_tuned_suffix.format(model_name=origin_name,
-                                               model_tag=self.__model_tag_from_ra_version(ra_version))
+        return Common.combine_tag_with_full_model_name(full_model_name=origin_name,
+                                                       tag=Common.get_tag_by_ruattitudes_version(ra_version))
 
     def register(self, sample_fmt_type, folding_type, labels_count, ra_version):
         assert(ra_version is self.__source_ra_version)
