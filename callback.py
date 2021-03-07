@@ -42,6 +42,8 @@ class CustomCallback(Callback):
         return exists(short_log_filepath)
 
     def write_results(self, result, data_type, epoch_index):
+        self.__open_filepaths_optionally()
+
         eval_verbose_msg = create_iteration_verbose_eval_msg(eval_result=result,
                                                              data_type=data_type,
                                                              epoch_index=epoch_index)
@@ -54,8 +56,7 @@ class CustomCallback(Callback):
         self.__eval_verbose_file.write(u"{}\n".format(eval_verbose_msg))
         self.__eval_short_file.write(u"{}\n".format(eval_short_msg))
 
-    def __enter__(self):
-
+    def __open_filepaths_optionally(self):
         # Compose filepath for verbose results.
         eval_verbose_log_filepath = join(
             self.__log_dir,
@@ -66,10 +67,18 @@ class CustomCallback(Callback):
         create_dir_if_not_exists(eval_verbose_log_filepath)
         create_dir_if_not_exists(eval_short_log_filepath)
 
-        self.__eval_short_file = open(eval_short_log_filepath, u"w", buffering=0)
-        self.__eval_verbose_file = open(eval_verbose_log_filepath, u"w", buffering=0)
+        if self.__eval_short_file is None:
+            self.__eval_short_file = open(eval_short_log_filepath, u"w", buffering=0)
+
+        if self.__eval_verbose_file is None:
+            self.__eval_verbose_file = open(eval_verbose_log_filepath, u"w", buffering=0)
+
+    def __enter__(self):
+        pass
 
     def __exit__(self, exc_type, exc_val, exc_tb):
+        """ Release handles of created files.
+        """
 
         if self.__eval_verbose_file is not None:
             self.__eval_verbose_file.close()
