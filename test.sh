@@ -1,0 +1,1 @@
+python2.7 -u run_serialization.py --ra-ver v1_2 --experiment ra --frames-version v2_0 --bert-input-fmt c_m --entity-fmt "sharp-simple" --balance-samples True --labels-count 2
