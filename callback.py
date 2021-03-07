@@ -82,9 +82,11 @@ class CustomCallback(Callback):
 
         if self.__eval_verbose_file is not None:
             self.__eval_verbose_file.close()
+            self.__eval_verbose_file = None
 
         if self.__eval_short_file is not None:
             self.__eval_short_file.close()
+            self.__eval_short_file = None
 
         self.__it_index = None
 
