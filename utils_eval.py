@@ -31,14 +31,26 @@ class CustomEvalHelper(EvalHelper):
 
     RESULTS_TEMPLATE_FILENAME = u"test_results_i{it_index}_e{epoch_index}_s{state_name}.tsv"
 
-    def __init__(self, log_dir, state_name):
+    def __init__(self, log_dir, state_name, ft_tag):
+        assert(isinstance(ft_tag, unicode) or ft_tag is None)
         self.__log_dir = log_dir
         self.__state_name = state_name
+        self.__ft_tag = ft_tag
 
-    def get_results_filename(self, iter_index, epoch_index):
+    def __create_results_filename(self, iter_index, epoch_index):
         return CustomEvalHelper.RESULTS_TEMPLATE_FILENAME.format(it_index=iter_index,
                                                                  epoch_index=epoch_index,
                                                                  state_name=self.__state_name)
+
+    def __get_results_dir(self, target_dir):
+        return Common.combine_tag_with_full_model_name(full_model_name=target_dir,
+                                                       tag=self.__ft_tag)
+
+    def get_results_dir(self, target_dir):
+        return self.__get_results_dir(target_dir)
+
+    def get_results_filename(self, iter_index, epoch_index):
+        return self.__create_results_filename(iter_index=iter_index, epoch_index=epoch_index)
 
 
 if __name__ == "__main__":
@@ -78,13 +90,16 @@ if __name__ == "__main__":
         u'balancing': [True],
         u"frames_versions": [RuSentiFramesVersionsService.get_type_by_name(frames_version)
                              for frames_version in RuSentiFramesVersionsService.iter_supported_names()],
+        u"state_names": [u"ra-12-bert-base-nli-pretrained-2l",
+                         u"multi_cased_L-12_H-768_A-12"]
     }
 
     def __run():
 
-        full_model_name = Common.create_full_model_name(sample_fmt_type=sample_formatter_type,
-                                                        entities_fmt_type=entity_formatter_type,
-                                                        labels_count=int(labels_count))
+        full_model_name = Common.create_full_model_name(
+            sample_fmt_type=sample_formatter_type,
+            entities_fmt_type=entity_formatter_type,
+            labels_count=int(labels_count))
 
         extra_name_suffix = create_exp_name_suffix(use_balancing=balance_samples,
                                                    terms_per_context=terms_per_context,
@@ -114,7 +129,8 @@ if __name__ == "__main__":
                                        extra_name_suffix=extra_name_suffix)
 
         eval_helper = CustomEvalHelper(log_dir=Common.log_dir,
-                                       state_name=u"multi_cased_L-12_H-768_A-12")
+                                       state_name=state_name,
+                                       ft_tag=Common.get_tag_by_ruattitudes_version(ra_version))
 
         engine = LanguageModelExperimentEvaluator(experiment=experiment,
                                                   data_type=DataType.Test,
@@ -132,4 +148,5 @@ if __name__ == "__main__":
                         for balance_samples in grid[u'balancing']:
                             for ra_version in grid[u'ra_names']:
                                 for frames_version in grid[u'frames_versions']:
-                                    __run()
+                                    for state_name in grid[u'state_names']:
+                                        __run()
