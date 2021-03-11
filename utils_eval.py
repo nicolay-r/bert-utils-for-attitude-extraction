@@ -1,10 +1,14 @@
 import argparse
+
+import numpy as np
+
 from arekit.common.entities.formatters.types import EntityFormattersService
 from arekit.common.evaluation.evaluators.modes import EvaluationModes
 from arekit.common.evaluation.evaluators.two_class import TwoClassEvaluator
 from arekit.common.experiment.data_type import DataType
 from arekit.common.experiment.folding.types import FoldingType
 from arekit.common.experiment.scales.factory import create_labels_scaler
+from arekit.common.utils import progress_bar_defined
 
 from arekit.contrib.bert.output.eval_helper import EvalHelper
 from arekit.contrib.bert.run_evaluation import LanguageModelExperimentEvaluator
@@ -75,7 +79,7 @@ if __name__ == "__main__":
     eval_mode = EvaluationModes.Extraction
     dist_in_terms_between_attitude_ends = None
 
-    # grid for looking through.
+    # serializing.py for looking through.
     grid = {
         u"labels": [2, 3],
         u"foldings": [FoldingType.Fixed,
@@ -88,13 +92,22 @@ if __name__ == "__main__":
         u"ra_names": [RuAttitudesVersionsService.find_by_name(ra_name)
                       for ra_name in RuAttitudesVersionsService.iter_supported_names()],
         u'balancing': [True],
-        u"frames_versions": [RuSentiFramesVersionsService.get_type_by_name(frames_version)
-                             for frames_version in RuSentiFramesVersionsService.iter_supported_names()],
-        u"state_names": [u"ra-12-bert-base-nli-pretrained-2l",
+        u"frames_versions": [RuSentiFramesVersionsService.get_type_by_name(fv)
+                             for fv in RuSentiFramesVersionsService.iter_supported_names()],
+        # TODO. Move these parameters out of this code
+        u"state_names": [# Fine-tuned 2-l states.
+                         u"ra-12-bert-base-nli-pretrained-2l",
+                         u"ra-20-bert-base-nli-pretrained-2l",
+                         u"ra-20-bert-large-nli-pretrained-2l",
+                         # Fine-tuned 3-l states.
+                         u"ra-12-bert-base-nli-pretrained-3l",
+                         u"ra-20-bert-large-neut-nli-pretrained-3l",
+                         # Default state.
                          u"multi_cased_L-12_H-768_A-12"]
     }
 
-    def __run():
+    def __run(labels_count, folding_type, exp_type, entity_formatter_type, sample_formatter_type,
+              balance_samples, ra_version, frames_version, state_name):
 
         full_model_name = Common.create_full_model_name(
             sample_fmt_type=sample_formatter_type,
@@ -140,13 +153,28 @@ if __name__ == "__main__":
         # Starting evaluation process.
         engine.run()
 
-    for labels_count in grid[u"labels"]:
-        for folding_type in grid[u"foldings"]:
-            for exp_type in grid[u'exp_types']:
-                for entity_formatter_type in grid[u'entity_fmts']:
-                    for sample_formatter_type in grid[u'sample_types']:
-                        for balance_samples in grid[u'balancing']:
-                            for ra_version in grid[u'ra_names']:
-                                for frames_version in grid[u'frames_versions']:
-                                    for state_name in grid[u'state_names']:
-                                        __run()
+    def run_through_params_grid():
+        for labels_count in grid[u"labels"]:
+            for folding_type in grid[u"foldings"]:
+                for exp_type in grid[u'exp_types']:
+                    for entity_formatter_type in grid[u'entity_fmts']:
+                        for sample_formatter_type in grid[u'sample_types']:
+                            for balance_samples in grid[u'balancing']:
+                                for ra_version in grid[u'ra_names']:
+                                    for frames_version in grid[u'frames_versions']:
+                                        for state_name in grid[u'state_names']:
+                                            __run(labels_count=labels_count,
+                                                  folding_type=folding_type,
+                                                  exp_type=exp_type,
+                                                  entity_formatter_type=entity_formatter_type,
+                                                  sample_formatter_type=sample_formatter_type,
+                                                  balance_samples=balance_samples,
+                                                  ra_version=ra_version,
+                                                  frames_version=frames_version,
+                                                  state_name=state_name)
+                                            yield None
+
+    # Running tqdm, wrapped into progress bar.
+    grid_sizes = [len(v) for v in grid.values()]
+    for _ in progress_bar_defined(iterable=run_through_params_grid(), total=np.prod(grid_sizes)):
+        pass

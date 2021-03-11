@@ -38,7 +38,6 @@ class CustomCallback(Callback):
 
     def check_log_exists(self):
         short_log_filepath = self.__create_short_log_filepath()
-        print short_log_filepath
         return exists(short_log_filepath)
 
     def write_results(self, result, data_type, epoch_index):
