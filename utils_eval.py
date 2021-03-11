@@ -139,6 +139,7 @@ if __name__ == "__main__":
                                        experiment_io_type=CustomBertIOUtils,
                                        ruattitudes_version=ra_version,
                                        load_ruattitude_docs=False,
+                                       do_log=False,
                                        extra_name_suffix=extra_name_suffix)
 
         eval_helper = CustomEvalHelper(log_dir=Common.log_dir,
@@ -176,5 +177,9 @@ if __name__ == "__main__":
 
     # Running tqdm, wrapped into progress bar.
     grid_sizes = [len(v) for v in grid.values()]
-    for _ in progress_bar_defined(iterable=run_through_params_grid(), total=np.prod(grid_sizes)):
+    it = progress_bar_defined(iterable=run_through_params_grid(),
+                              total=np.prod(grid_sizes),
+                              desc=u"Analyzing possible experiments")
+
+    for _ in it:
         pass
