@@ -43,10 +43,9 @@ class Common:
     @staticmethod
     def combine_tag_with_full_model_name(full_model_name, tag):
         assert(isinstance(tag, unicode) or tag is None)
-        if tag is None:
-            return full_model_name
-        else:
-            return Common.__combine_tag_with_full_model_name(full_model_name=full_model_name, tag=tag)
+        return Common.__combine_tag_with_full_model_name(
+                full_model_name=full_model_name,
+                tag=unicode(tag))
 
     @staticmethod
     def create_log_eval_filename(iter_index, data_type):
