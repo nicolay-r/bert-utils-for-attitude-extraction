@@ -101,9 +101,11 @@ if __name__ == "__main__":
                          u"ra-20-bert-large-nli-pretrained-2l",
                          # Fine-tuned 3-l states.
                          u"ra-12-bert-base-nli-pretrained-3l",
+                         u"ra-20-bert-base-neut-nli-pretrained-3l",
                          u"ra-20-bert-large-neut-nli-pretrained-3l",
                          # Default state.
-                         u"multi_cased_L-12_H-768_A-12"]
+                         u"multi_cased_L-12_H-768_A-12",
+                         u"rubert_cased_L-12_H-768_A-12"]
     }
 
     def __run(labels_count, folding_type, exp_type, entity_formatter_type, sample_formatter_type,
