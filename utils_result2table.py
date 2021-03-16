@@ -147,9 +147,14 @@ class ResultsTable(object):
             result_type=u"_".join([rt.value for rt in self.__result_types]))
 
     def _create_model_dir(self, labels_count, sample_fmt_type, exp_type):
-        return Common.create_full_model_name(sample_fmt_type=sample_fmt_type,
-                                             labels_count=labels_count,
-                                             entities_fmt_type=EntityFormatterTypes.SimpleSharpPrefixed)
+        m_name = Common.create_full_model_name(
+                sample_fmt_type=sample_fmt_type,
+                labels_count=labels_count,
+                entities_fmt_type=EntityFormatterTypes.SimpleSharpPrefixed)
+
+        return Common.combine_tag_with_full_model_name(
+                full_model_name=m_name,
+                tag=None)
 
     def __save_results(self, rt, it_results, avg_res,
                        labels_count, folding_type, row_ind):
@@ -488,28 +493,31 @@ class FineTunedResultsProvider(ResultsTable):
                 ra_version=ra_version_loc)
 
 
-def fill_single23(res, sample_fmt_types, ra_3l, ra_2l):
+def fill_single23(res, sample_fmt_types, ra_3l, ra_2l, labels):
     assert(isinstance(res, ResultsTable))
     assert(isinstance(sample_fmt_types, list))
     assert(isinstance(ra_2l, list))
     assert(isinstance(ra_3l, list))
+    assert(isinstance(labels, list))
 
     for sample_fmt_type in sample_fmt_types:
         assert(isinstance(sample_fmt_type, BertSampleFormatterTypes))
         for folding_type in FoldingType:
             # for 3-scale
-            for ra_version in ra_3l:
-                res.register(sample_fmt_type=sample_fmt_type,
-                             folding_type=folding_type,
-                             labels_count=3,
-                             ra_version=ra_version)
+            if 3 in labels:
+                for ra_version in ra_3l:
+                    res.register(sample_fmt_type=sample_fmt_type,
+                                 folding_type=folding_type,
+                                 labels_count=3,
+                                 ra_version=ra_version)
 
             # for 2-scale
-            for ra_version in ra_2l:
-                res.register(sample_fmt_type=sample_fmt_type,
-                             folding_type=folding_type,
-                             labels_count=2,
-                             ra_version=ra_version)
+            if 2 in labels:
+                for ra_version in ra_2l:
+                    res.register(sample_fmt_type=sample_fmt_type,
+                                 folding_type=folding_type,
+                                 labels_count=2,
+                                 ra_version=ra_version)
 
 
 def fill_finetunned(res, sample_fmt_types, labels):
@@ -621,7 +629,8 @@ if __name__ == "__main__":
         fill_single23(res=rt,
                       sample_fmt_types=sample_fmt_types,
                       ra_3l=ra_3l + [None],
-                      ra_2l=ra_2l + [None])
+                      ra_2l=ra_2l + [None],
+                      labels=labels)
     if training_type == u'ft':
         fill_finetunned(res=rt,
                         labels=labels,
@@ -630,7 +639,8 @@ if __name__ == "__main__":
         fill_single23(res=rt,
                       sample_fmt_types=sample_fmt_types,
                       ra_3l=ra_3l,
-                      ra_2l=ra_2l)
+                      ra_2l=ra_2l,
+                      labels=labels)
 
     rt.save(round_decimals=args.round,
             coef_scaler=args.scale)
