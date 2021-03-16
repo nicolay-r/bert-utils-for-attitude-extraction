@@ -146,15 +146,19 @@ class ResultsTable(object):
             input_type=self.__input_type,
             result_type=u"_".join([rt.value for rt in self.__result_types]))
 
-    def _create_model_dir(self, labels_count, sample_fmt_type, exp_type):
-        m_name = Common.create_full_model_name(
-                sample_fmt_type=sample_fmt_type,
-                labels_count=labels_count,
-                entities_fmt_type=EntityFormatterTypes.SimpleSharpPrefixed)
+    @staticmethod
+    def _create_model_name(labels_count, sample_fmt_type):
+        return Common.create_full_model_name(
+            sample_fmt_type=sample_fmt_type,
+            labels_count=labels_count,
+            entities_fmt_type=EntityFormatterTypes.SimpleSharpPrefixed)
 
-        return Common.combine_tag_with_full_model_name(
-                full_model_name=m_name,
-                tag=None)
+    def _create_model_dir(self, labels_count, sample_fmt_type, exp_type):
+        base_name = self._create_model_name(sample_fmt_type=sample_fmt_type,
+                                            labels_count=labels_count)
+
+        return Common.combine_tag_with_full_model_name(full_model_name=base_name,
+                                                       tag=None)
 
     def __save_results(self, rt, it_results, avg_res,
                        labels_count, folding_type, row_ind):
@@ -475,10 +479,11 @@ class FineTunedResultsProvider(ResultsTable):
             return origin_name
 
         ra_version = RuAttitudesVersionsService.find_by_name(exp_type)
-        print Common.combine_tag_with_full_model_name(full_model_name=origin_name,
-                                                      tag=Common.get_tag_by_ruattitudes_version(ra_version))
-        return Common.combine_tag_with_full_model_name(full_model_name=origin_name,
-                                                       tag=Common.get_tag_by_ruattitudes_version(ra_version))
+        return Common.combine_tag_with_full_model_name(
+            full_model_name=self._create_model_name(
+                sample_fmt_type=sample_fmt_type,
+                labels_count=labels_count),
+            tag=Common.get_tag_by_ruattitudes_version(ra_version))
 
     def register(self, sample_fmt_type, folding_type, labels_count, ra_version):
         assert(ra_version is self.__source_ra_version)
