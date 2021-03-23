@@ -17,7 +17,7 @@ from arekit.contrib.experiments.rusentrel.folding import DEFAULT_CV_COUNT
 from arekit.common.experiment.folding.types import FoldingType
 from arekit.contrib.source.ruattitudes.io_utils import RuAttitudesVersions, RuAttitudesVersionsService
 from arekit.contrib.source.rusentrel.io_utils import RuSentRelVersions
-from callback_log_iter import parse_last
+from callback_log_iter import parse_last, parse_epochs_count
 from common import Common
 
 
@@ -191,8 +191,9 @@ class ResultsTable(object):
                 result_type == ResultType.TrainingAccuracy or \
                 result_type == ResultType.EpochsCount:
             for it_index in range(iters):
-                yield join(Common.log_dir, Common.create_log_train_filename(data_type=DataType.Train,
-                                                                            iter_index=it_index))
+                yield join(Common.log_dir, Common.create_log_eval_filename(data_type=DataType.Test,
+                                                                           iter_index=it_index))
+
         elif result_type == ResultType.F1LastTrain:
             for it_index in range(iters):
                 yield join(Common.log_dir, Common.create_log_eval_filename(data_type=DataType.Train,
@@ -232,6 +233,9 @@ class ResultsTable(object):
             times = self.__parse_iter_results(files_per_iter=files_per_iter,
                                               eval_ctx=eval_ctx)
             return [epochs[i] * times[i] for i in range(len(epochs))]
+        if r_type == ResultType.EpochsCount:
+            # Show epochs count.
+            return [parse_epochs_count(filepath=fp) for fp in files_per_iter]
         elif r_type == ResultType.F1LastTrain or \
              r_type == ResultType.F1LastTest:
             return [parse_last(filepath=fp, col=TwoClassEvalResult.C_F1) for fp in files_per_iter]

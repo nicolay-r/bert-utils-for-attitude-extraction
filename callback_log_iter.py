@@ -21,6 +21,15 @@ def create_iteration_short_eval_msg(eval_result, data_type, epoch_index):
     return u'\n'.join([title, contents])
 
 
+def parse_epochs_count(filepath):
+    epochs = None
+    with open(filepath, 'r') as f:
+        for line in f.readlines():
+            if u'Stat for' in line:
+                epochs = line.split(u'=')[-1]
+    return int(epochs)
+
+
 def parse_last(filepath, col):
     """ Stat for '[DataType.Train]', e=11
         f1: 0.96; f1_pos: 0.97; f1_neg: 0.94; pos_prec: 0.97; neg_prec: 0.95; pos_recall: 0.97; neg_recall: 0.94
