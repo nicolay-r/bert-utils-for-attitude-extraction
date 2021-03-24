@@ -24,24 +24,15 @@ from common import Common
 class ResultType(Enum):
 
     F1 = u'f1'
-    TrainingEpochTime = u'train-epoch-time'
-    TrainingTotalTime = u'train-total-time'
-    TrainingAccuracy = u'train-acc'
     F1LastTrain = u'f1-last-train'
     F1LastTest = u'f1-last-test'
     F1NeutLastTest = u'f1-u-last-test'
     PrecNeutLastTest = u'prec-u-last-test'
     RecallNeutLastTest = u'recall-u-last-test'
     EpochsCount = u'epochs'
-    # Using WIMS-2020 related paper format for results improvement calucalation.
+    # Using WIMS-2020 related paper format for results improvement calculation.
     # Considering f1-test values by default.
     DSDiffF1Improvement = u'ds-diff-imp'
-    DSDiffAttImprovement = u'ds-diff-att'
-    TrainingPosSamplesCount = u'train-samples-pos'
-    TrainingNegSamplesCount = u'train-samples-neg'
-    TrainingNeuSamplesCount = u'train-samples-neu'
-
-    LearningRate = u'train-lr'
 
     @staticmethod
     def from_str(value):
@@ -186,15 +177,7 @@ class ResultsTable(object):
 
         iters = self.__cv_count if folding_type == FoldingType.CrossValidation else 1
 
-        if result_type == ResultType.TrainingEpochTime or \
-                result_type == ResultType.TrainingTotalTime or \
-                result_type == ResultType.TrainingAccuracy or \
-                result_type == ResultType.EpochsCount:
-            for it_index in range(iters):
-                yield join(Common.log_dir, Common.create_log_eval_filename(data_type=DataType.Test,
-                                                                           iter_index=it_index))
-
-        elif result_type == ResultType.F1LastTrain:
+        if result_type == ResultType.F1LastTrain:
             for it_index in range(iters):
                 yield join(Common.log_dir, Common.create_log_eval_filename(data_type=DataType.Train,
                                                                            iter_index=it_index))
@@ -205,14 +188,6 @@ class ResultsTable(object):
             for it_index in range(iters):
                 yield join(Common.log_dir, Common.create_log_eval_filename(data_type=DataType.Test,
                                                                            iter_index=it_index))
-        elif result_type == ResultType.LearningRate:
-            for it_index in range(iters):
-                yield join(Common.log_dir, Common.model_config_name)
-        elif result_type == ResultType.TrainingPosSamplesCount or \
-                result_type == ResultType.TrainingNegSamplesCount or \
-                result_type == ResultType.TrainingNeuSamplesCount:
-            # returning back from the model dir to the experiment dir.
-            yield u".."
         else:
             raise NotImplementedError("Not supported type: {}".format(result_type))
 
@@ -223,16 +198,6 @@ class ResultsTable(object):
         # Picking a current result type for eval_context.
         r_type = eval_ctx.rt
 
-        if r_type == ResultType.TrainingTotalTime:
-            # Calculate epochs count.
-            eval_ctx.rt = ResultType.EpochsCount
-            epochs = self.__parse_iter_results(files_per_iter=files_per_iter,
-                                               eval_ctx=eval_ctx)
-            # Calculate training epoch time.
-            eval_ctx.rt = ResultType.TrainingEpochTime
-            times = self.__parse_iter_results(files_per_iter=files_per_iter,
-                                              eval_ctx=eval_ctx)
-            return [epochs[i] * times[i] for i in range(len(epochs))]
         if r_type == ResultType.EpochsCount:
             # Show epochs count.
             return [parse_epochs_count(filepath=fp) for fp in files_per_iter]
