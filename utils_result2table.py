@@ -23,7 +23,6 @@ from common import Common
 
 class ResultType(Enum):
 
-    F1 = u'f1'
     F1LastTrain = u'f1-last-train'
     F1LastTest = u'f1-last-test'
     F1NeutLastTest = u'f1-u-last-test'
@@ -182,6 +181,7 @@ class ResultsTable(object):
                 yield join(Common.log_dir, Common.create_log_eval_filename(data_type=DataType.Train,
                                                                            iter_index=it_index))
         elif result_type == ResultType.F1LastTest or \
+             result_type == ResultType.DSDiffF1Improvement or \
              result_type == ResultType.F1NeutLastTest or \
              result_type == ResultType.PrecNeutLastTest or \
              result_type == ResultType.RecallNeutLastTest:
@@ -212,6 +212,36 @@ class ResultsTable(object):
         elif r_type == ResultType.RecallNeutLastTest:
             return [parse_last(filepath=fp, col=ThreeClassEvalResult.C_NEU_RECALL)
                     for fp in files_per_iter]
+        elif r_type == ResultType.DSDiffF1Improvement:
+
+            def __calc_diff(base_it_results, rt):
+                assert (isinstance(rt, ResultType))
+
+                # Calculate current results.
+                local_eval_ctx = ResultsEvalContext.copy(eval_ctx)
+                local_eval_ctx.rt = rt
+                curr_it_results = self.__parse_iter_results(files_per_iter=files_per_iter,
+                                                            eval_ctx=local_eval_ctx)
+
+                # calculating result difference.
+                diff = [self.__calc_diff_metric(a=curr_it_results[i], b=base_it_results[i])
+                        for i in range(len(curr_it_results))]
+
+                res.append(diff)
+
+            # using this as a local variable which is accessible from callback
+            res = []
+
+            # Perform another experiments result evaluation.
+            self._for_experiment(sample_fmt_type=eval_ctx.sample_fmt_type,
+                                 folding_type=eval_ctx.folding_type,
+                                 ra_version=None,
+                                 rsr_version=eval_ctx.rsr_ver,
+                                 labels_count=eval_ctx.labels_count,
+                                 result_types=[ResultType.F1LastTest],
+                                 callback=__calc_diff)
+
+            return res[0] if len(res) == 1 else []
 
         else:
             raise NotImplementedError("Not supported type: {}". format(r_type))
