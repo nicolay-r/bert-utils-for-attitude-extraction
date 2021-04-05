@@ -1,9 +1,7 @@
 # BERT-based model utils for Sentiment Attitude Extraction task
     
-Language Models service (for BERT-based models), using [AREkit](https://github.com/nicolay-r/AREkit) library.
-As a basis of [Sentiment Attitude Extraction task](https://github.com/nicolay-r/RuSentRel), we considering the conversion for the following datasets:
-* RuSentRel
-* RuAttitudes
+This repository is BERT-based model service for Sentiment Attitude Extraction,
+based on [AREkit](https://github.com/nicolay-r/AREkit) framework.
 
 ## Dependencies
 
@@ -11,9 +9,16 @@ As a basis of [Sentiment Attitude Extraction task](https://github.com/nicolay-r/
 * AREkit == 0.20.5
 * tqdm
 
-### Results Evaluation
+## Utils
+
+### Data Serialization
+
+Supported collections:
+* RuSentRel
+* RuAttitudes
 
 > TODO.
 
-## References
-> TODO. Provide references to papers with a variety of formatters.
+### Results Evaluation
+
+Proceed with the [following]() notebook.
