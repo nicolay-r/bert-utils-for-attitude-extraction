@@ -3,9 +3,15 @@
 This repository is BERT-based model service for Sentiment Attitude Extraction,
 based on [AREkit](https://github.com/nicolay-r/AREkit) framework.
 
+## Utils List
+
+* [Data Serialization](#data-serialization)
+* [Data Converter for Attention Analysis](#data-converter-for-attention-analysis)
+* [Results Evaluation](#results-evaluation)
+
 ## Dependencies
 
-* Python 2.7.9 (Assumes to be upgraded to 3.6+)
+* Python 2.7.9
 * AREkit == 0.20.5
 * tqdm
 
@@ -18,6 +24,12 @@ Supported collections:
 * RuAttitudes
 
 > TODO.
+
+### Data Converter for Attention Analysis
+
+> TODO. Provide the related bash-script (paste from another project);
+
+> Provide notebook for the related analysis (or notebook reference);
 
 ### Results Evaluation
 
