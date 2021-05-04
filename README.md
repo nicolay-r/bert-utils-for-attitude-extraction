@@ -23,14 +23,6 @@ Supported collections:
 * RuSentRel
 * RuAttitudes
 
-> TODO.
-
-### Data Converter for Attention Analysis
-
-> TODO. Provide the related bash-script (paste from another project);
-
-> Provide notebook for the related analysis (or notebook reference);
-
 ### Results Evaluation
 
 Proceed with the [following]() notebook.
