@@ -9,9 +9,8 @@ based on [AREkit](https://github.com/nicolay-r/AREkit) framework.
 
 ## Utils List
 
-* [Data Serialization](#data-serialization)
-* [Data Converter for Attention Analysis](#data-converter-for-attention-analysis)
-* [Results Evaluation](#results-evaluation)
+* [Data Serialization](#usage-data-serialization)
+* [Results Evaluation](#usage-results-evaluation)
 
 ## Dependencies
 
@@ -41,13 +40,34 @@ python run_serialization.py
     --bert-input-fmt c_m
 ```
 
-Supported collections:
-* RuSentRel
-* RuAttitudes
+For flags meanings please proceed with [this section](#script-arguments-manual)
 
-### Results Evaluation
+### Usage: Results Evaluation
 
 Proceed with the [following](results_evaluation.ipynb) notebook.
+
+### Script Arguments Manual
+
+Common flags:
+* `--experiment` -- is an experiment which could be as follows:
+    * `rsr` -- supervised learning + evaluation within [RuSentRel](https://github.com/nicolay-r/RuSentRel) collection;
+    * `ra` -- pretraining with [RuAttitudes](https://github.com/nicolay-r/RuAttitudes) collection;
+    * `rsr+ra` -- combined training within RuSentRel and RuAttitudes and evalut.
+* `--cv_count` -- data folding mode:
+    * `1` -- predefined docs separation onto TRAIN/TEST (RuSentRel);
+    * `k` -- CV-based folding onto `k`-folds; (`k=3` supported);
+* `--frames_versions` -- RuSentiFrames collection version:
+    * `v2.0` -- RuSentiFrames-2.0;
+* `--ra_ver` -- RuAttitudes version, if collection is applicable (`ra` or `rsr+ra` experiments):
+    * `v1_2` -- RuAttitudes-1.0 [paper](https://www.aclweb.org/anthology/R19-1118/);
+    * `v2_0_base`;
+    * `v2_0_large`;
+    * `v2_0_base_neut`;
+    * `v2_0_large_neut`;
+* `--bert-input-fmt` -- supported input formatters
+    * `c_m` -- single input (TEXT_A);
+    * `nli_m` -- TEXT_A + context in between of the attitude participants (TEXB_B);
+    * `qa_m` -- TEXT_A + question.
 
 ### References
 
