@@ -69,6 +69,6 @@ Common flags:
     * `nli_m` -- TEXT_A + context in between of the attitude participants (TEXB_B);
     * `qa_m` -- TEXT_A + question.
 
-### References
+## References
 
 > TODO. To be updated.
