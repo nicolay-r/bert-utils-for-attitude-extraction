@@ -23,7 +23,7 @@ based on [AREkit](https://github.com/nicolay-r/AREkit) framework.
 AREkit repository:
 ```shell script
 # Clone repository in local folder of the currect project. 
-git clone -b 0.20.5-rc https://github.com/nicolay-r/AREkit ../arekit
+git clone -b 0.21.0-rc https://github.com/nicolay-r/AREkit ../arekit
 # Install dependencies.
 pip install -r arekit/requirements.txt
 ```
