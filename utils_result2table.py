@@ -9,12 +9,12 @@ from os.path import join, exists
 from enum import Enum
 
 from arekit.common.entities.formatters.types import EntityFormatterTypes
-from arekit.common.evaluation.results.three_class import ThreeClassEvalResult
-from arekit.common.evaluation.results.two_class import TwoClassEvalResult
 from arekit.common.experiment.data_type import DataType
 from arekit.contrib.bert.samplers.types import BertSampleFormatterTypes
-from arekit.contrib.experiments.rusentrel.folding import DEFAULT_CV_COUNT
 from arekit.common.experiment.folding.types import FoldingType
+from arekit.contrib.experiment_rusentrel.evaluation.results.three_class import ThreeClassEvalResult
+from arekit.contrib.experiment_rusentrel.evaluation.results.two_class import TwoClassEvalResult
+from arekit.contrib.experiment_rusentrel.exp_sl.folding import DEFAULT_CV_COUNT
 from arekit.contrib.source.ruattitudes.io_utils import RuAttitudesVersions, RuAttitudesVersionsService
 from arekit.contrib.source.rusentrel.io_utils import RuSentRelVersions
 from callback_log_iter import parse_last, parse_epochs_count

@@ -7,13 +7,13 @@ from arekit.contrib.bert.callback import Callback
 
 class CustomTrainingData(TrainingData):
 
-    def __init__(self, labels_scaler, stemmer, evaluator, opinion_formatter, model_io, callback):
+    def __init__(self, labels_count, stemmer, evaluator, opinion_formatter, model_io, callback):
         assert(isinstance(evaluator, BaseEvaluator))
         assert(isinstance(opinion_formatter, OpinionCollectionsFormatter))
         assert(isinstance(model_io, BaseModelIO))
         assert(isinstance(callback, Callback))
 
-        super(CustomTrainingData, self).__init__(labels_scaler=labels_scaler,
+        super(CustomTrainingData, self).__init__(labels_count=labels_count,
                                                  stemmer=stemmer)
 
         self.__evaluator = evaluator

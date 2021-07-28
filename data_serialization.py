@@ -1,11 +1,16 @@
-from bert_model_io import BertModelIO
+from arekit.contrib.experiment_rusentrel.annot.algo import RuSentRelDefaultNeutralAnnotationAlgorithm
+from arekit.contrib.experiment_rusentrel.annot.factory import ExperimentAnnotatorFactory
+from arekit.contrib.experiment_rusentrel.frame_variants import ExperimentFrameVariantsCollection
+from arekit.contrib.experiment_rusentrel.labels.formatters.rusentiframes import ExperimentRuSentiFramesLabelsFormatter, \
+    ExperimentRuSentiFramesEffectLabelsFormatter
 
 from arekit.common.experiment.data.serializing import SerializationData
-from arekit.common.frame_variants.collection import FrameVariantsCollection
 
 from arekit.contrib.source.rusentiframes.collection import RuSentiFramesCollection
 from arekit.contrib.source.rusentiframes.types import RuSentiFramesVersions
 from arekit.contrib.source.rusentrel.opinions.formatter import RuSentRelOpinionCollectionFormatter
+
+from bert_model_io import BertModelIO
 
 
 class CustomSerializationData(SerializationData):
@@ -18,7 +23,13 @@ class CustomSerializationData(SerializationData):
 
         self.__dist_in_terms_between_attitude_ends = dist_in_terms_between_attitude_ends
 
-        super(CustomSerializationData, self).__init__(labels_scaler, stemmer)
+        annot = ExperimentAnnotatorFactory.create(
+            labels_count=labels_scaler.LabelsCount,
+            create_algo=lambda: RuSentRelDefaultNeutralAnnotationAlgorithm(
+                dist_in_terms_bound=dist_in_terms_between_attitude_ends))
+
+        super(CustomSerializationData, self).__init__(
+            label_scaler=labels_scaler, annot=annot, stemmer=stemmer)
 
         self.__model_io = model_io
         self.__terms_per_context = terms_per_context
@@ -28,10 +39,17 @@ class CustomSerializationData(SerializationData):
         self.__unique_frame_variants = None
 
         if frames_version is not None:
-            self.__frames_collection = RuSentiFramesCollection.read_collection(version=frames_version)
-            self.__unique_frame_variants = FrameVariantsCollection.create_unique_variants_from_iterable(
-                variants_with_id=self.__frames_collection.iter_frame_id_and_variants(),
-                stemmer=stemmer)
+
+            self.__frames_collection = RuSentiFramesCollection.read_collection(
+                version=frames_version,
+                labels_fmt=ExperimentRuSentiFramesLabelsFormatter(),
+                effect_labels_fmt=ExperimentRuSentiFramesEffectLabelsFormatter())
+
+            self.__unique_frame_variants = ExperimentFrameVariantsCollection(stemmer)
+
+            # Filling collection.
+            self.__unique_frame_variants.fill_from_iterable(
+                variants_with_id=self.__frames_collection.iter_frame_id_and_variants())
 
     # region public properties
 

@@ -1,6 +1,8 @@
 from arekit.common.entities.formatters.types import EntityFormattersService, EntityFormatterTypes
 from arekit.common.experiment.data_type import DataType
 from arekit.contrib.bert.samplers.types import SampleFormattersService, BertSampleFormatterTypes
+from arekit.contrib.experiment_rusentrel.labels.scalers.three import ThreeLabelScaler
+from arekit.contrib.experiment_rusentrel.labels.scalers.two import TwoLabelScaler
 from arekit.contrib.source.ruattitudes.io_utils import RuAttitudesVersions
 
 
@@ -18,6 +20,17 @@ class Common:
         RuAttitudesVersions.V20Large: u'ra-20l',
         RuAttitudesVersions.V20LargeNeut: u'ra-20ln'
     }
+
+    @staticmethod
+    def create_labels_scaler(labels_count):
+        assert (isinstance(labels_count, int))
+
+        if labels_count == 2:
+            return TwoLabelScaler()
+        if labels_count == 3:
+            return ThreeLabelScaler()
+
+        raise NotImplementedError("Not supported")
 
     @staticmethod
     def __combine_tag_with_full_model_name(full_model_name, tag):

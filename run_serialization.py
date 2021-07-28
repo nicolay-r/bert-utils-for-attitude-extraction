@@ -4,10 +4,10 @@ import logging
 
 from arekit.common.entities.formatters.factory import create_entity_formatter
 from arekit.common.experiment.folding.types import FoldingType
-from arekit.common.experiment.scales.factory import create_labels_scaler
 
 from arekit.contrib.bert.run_serializer import BertExperimentInputSerializer
-from arekit.contrib.experiments.factory import create_experiment
+from arekit.contrib.experiment_rusentrel.factory import create_experiment
+from arekit.contrib.experiment_rusentrel.labels.formatters.rusentiframes import ExperimentRuSentiFramesLabelsFormatter
 from arekit.processing.pos.mystem_wrap import POSMystemWrapper
 
 from args.balance import UseBalancingArg
@@ -122,7 +122,7 @@ if __name__ == "__main__":
 
     # Create experiment data and all the related information.
     experiment_data = CustomSerializationData(
-        labels_scaler=create_labels_scaler(labels_count),
+        labels_scaler=Common.create_labels_scaler(labels_count),
         stemmer=stemmer,
         frames_version=frames_version if parse_frames else None,
         model_io=model_io,
@@ -145,6 +145,7 @@ if __name__ == "__main__":
                                    extra_name_suffix=extra_name_suffix)
 
     engine = BertExperimentInputSerializer(experiment=experiment,
+                                           labels_formatter=ExperimentRuSentiFramesLabelsFormatter(),
                                            skip_if_folder_exists=False,
                                            sample_formatter_type=sample_formatter_type,
                                            entity_formatter=entity_formatter,

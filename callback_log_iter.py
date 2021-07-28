@@ -1,4 +1,4 @@
-from arekit.common.evaluation.results.two_class import TwoClassEvalResult
+from arekit.contrib.experiment_rusentrel.evaluation.results.two_class import TwoClassEvalResult
 
 PARAMS_SEP = u"; "
 NAME_VALUE_SEP = u': '
