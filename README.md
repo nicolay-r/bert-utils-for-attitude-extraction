@@ -20,15 +20,12 @@ based on [AREkit](https://github.com/nicolay-r/AREkit) framework.
 
 ## Installation
 
-AREkit repository:
+1. AREkit library installation:
 ```shell script
-# Clone repository in local folder of the currect project. 
-git clone -b 0.21.0-rc https://github.com/nicolay-r/AREkit ../arekit
-# Install dependencies.
-pip install -r arekit/requirements.txt
+pip install git+https://github.com/nicolay-r/AREkit.git@0.21.0-rc
 ```
 
-### Usage: Data Serialization
+## Usage: Data Serialization
 
 Using `run_serialization.sh` in order to prepare data for a particular experiment:
 
@@ -42,11 +39,11 @@ python run_serialization.py
 
 For flags meanings please proceed with [this section](#script-arguments-manual)
 
-### Usage: Results Evaluation
+## Usage: Results Evaluation
 
 Proceed with the [following](results_evaluation.ipynb) notebook.
 
-### Script Arguments Manual
+## Script Arguments Manual
 
 Common flags:
 * `--experiment` -- is an experiment which could be as follows:
